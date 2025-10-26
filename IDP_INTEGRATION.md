@@ -17,26 +17,26 @@ The Security Center now provides **centralized authentication and authorization*
                            │
                            ▼
 ┌────────────────────────────────────────────────────────────┐
-│          Security Center (common-platform-security-center)  │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────┐  │
-│  │          AuthenticationController                    │  │
-│  │    /api/v1/auth/login, /logout, /refresh            │  │
-│  └─────────────────────────────────────────────────────┘  │
-│                           │                                 │
-│  ┌─────────────────────────────────────────────────────┐  │
-│  │          AuthenticationService                       │  │
-│  │    • Coordinates IDP + Session                       │  │
-│  │    • Maps IDP user → Firefly partyId                 │  │
-│  └─────────────────────────────────────────────────────┘  │
-│          │                          │                       │
-│          ▼                          ▼                       │
-│  ┌──────────────┐        ┌──────────────────────────┐     │
-│  │  IdpAdapter  │        │  FireflySessionManager   │     │
-│  │   (Keycloak/ │        │  • Contracts              │     │
-│  │    Cognito)  │        │  • Roles & Scopes         │     │
-│  └──────────────┘        │  • Products               │     │
-│                          └──────────────────────────┘     │
+│          Security Center (common-platform-security-center) │
+│                                                            │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │          AuthenticationController                   │   │
+│  │    /api/v1/auth/login, /logout, /refresh            │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           │                                │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │          AuthenticationService                      │   │
+│  │    • Coordinates IDP + Session                      │   │
+│  │    • Maps IDP user → Firefly partyId                │   │
+│  └─────────────────────────────────────────────────────┘   │
+│          │                          │                      │
+│          ▼                          ▼                      │
+│  ┌──────────────┐        ┌──────────────────────────┐      │
+│  │  IdpAdapter  │        │  FireflySessionManager   │      │
+│  │   (Keycloak/ │        │  • Contracts             │      │
+│  │    Cognito)  │        │  • Roles & Scopes        │      │
+│  └──────────────┘        │  • Products              │      │
+│                          └──────────────────────────┘      │
 └────────────────────────────────────────────────────────────┘
 ```
 
@@ -45,10 +45,10 @@ The Security Center now provides **centralized authentication and authorization*
 ### 1. Login Flow
 
 ```
-Client                  Security Center             IDP            Customer-Mgmt
-  │                           │                      │                    │
-  ├─POST /auth/login─────────►│                      │                    │
-  │ {username, password}       │                      │                    │
+Client                  Security Center              IDP            Customer-Mgmt
+  │                           │                       │                    │
+  ├─POST /auth/login─────────►│                       │                    │
+  │ {username, password}      │                       │                    │
   │                           ├─login()──────────────►│                    │
   │                           │                       │                    │
   │                           │◄────tokens────────────┤                    │
@@ -57,23 +57,23 @@ Client                  Security Center             IDP            Customer-Mgmt
   │                           ├─getUserInfo()────────►│                    │
   │                           │◄────userInfo──────────┤                    │
   │                           │                       │                    │
-  │                           ├─mapToPartyId()───────────────────────────►│
-  │                           │◄────partyId──────────────────────────────┤│
+  │                           ├─mapToPartyId()────────────────────────────►│
+  │                           │◄────partyId───────────────────────────────┤│
   │                           │                       │                    │
   │                           ├─createSession()       │                    │
   │                           │  (aggregates contracts, roles, products)   │
   │                           │                       │                    │
   │◄─────response─────────────┤                       │                    │
-  │ {tokens, sessionId}        │                       │                    │
+  │ {tokens, sessionId}       │                       │                    │
 ```
 
 ### 2. Logout Flow
 
 ```
-Client                  Security Center             IDP            Cache
-  │                           │                      │               │
-  ├─POST /logout─────────────►│                      │               │
-  │ {tokens, sessionId}        │                      │               │
+Client                  Security Center              IDP            Cache
+  │                           │                       │               │
+  ├─POST /logout─────────────►│                       │               │
+  │ {tokens, sessionId}       │                       │               │
   │                           ├─logout()─────────────►│               │
   │                           │  (revoke IDP tokens)  │               │
   │                           │                       │               │
