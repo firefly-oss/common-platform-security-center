@@ -19,13 +19,17 @@ package com.firefly.security.center.web.controllers;
 import com.firefly.idp.adapter.IdpAdapter;
 import com.firefly.idp.dtos.*;
 import com.firefly.security.center.core.services.AuthenticationService;
+import com.firefly.security.center.core.services.UserMappingService;
 import com.firefly.security.center.session.FireflySessionManager;
+import com.firefly.security.center.web.config.TestWebClientConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
@@ -46,7 +50,15 @@ import static org.mockito.Mockito.when;
  *   <li>Token introspection</li>
  * </ul>
  */
-@WebFluxTest(AuthenticationController.class)
+@WebFluxTest(
+    controllers = AuthenticationController.class,
+    excludeAutoConfiguration = {
+        org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class
+    }
+)
+@Import(TestWebClientConfiguration.class)
+@ActiveProfiles("test")
 class AuthenticationControllerIntegrationTest {
 
     @Autowired
@@ -60,6 +72,9 @@ class AuthenticationControllerIntegrationTest {
 
     @MockBean
     private FireflySessionManager sessionManager;
+
+    @MockBean
+    private UserMappingService userMappingService;
 
     @Test
     void testLoginSuccess() {

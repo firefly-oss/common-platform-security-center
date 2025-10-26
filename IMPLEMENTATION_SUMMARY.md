@@ -143,8 +143,7 @@ All compilation errors resolved:
 - Cache manager integration
 - DTO toBuilder methods
 - Main application class reference
-
-## What's Ready to Use
+### What's Ready to Use
 
 ### For Keycloak ✅
 1. Add Keycloak configuration to environment variables
@@ -152,25 +151,49 @@ All compilation errors resolved:
 3. Call `/api/v1/auth/login` to authenticate
 4. Use returned `sessionId` + `accessToken` for API calls
 
-### For AWS Cognito ⏳
-Requires `lib-idp-aws-cognito-impl` implementation (repository created).
+### For AWS Cognito ✅
+1. Add AWS Cognito configuration to environment variables
+2. Deploy security-center microservice with Cognito provider
+3. Call `/api/v1/auth/login` to authenticate
+4. Use returned `sessionId` + `accessToken` for API calls
 
-## Repository Created
+## Repositories
 
-✅ **lib-idp-aws-cognito-impl**: https://github.com/firefly-oss/lib-idp-aws-cognito-impl
+✅ **lib-idp-adapter**: Core interface and DTOs  
+✅ **lib-idp-keycloak-impl**: Keycloak implementation  
+✅ **lib-idp-aws-cognito-impl**: AWS Cognito implementation (fully tested)
+
+## Features Completed
+
+### AWS Cognito Adapter ✅
+- Full `IdpAdapter` implementation using AWS SDK v2
+- Authentication flows (login, refresh, logout)
+- User management (CRUD operations)
+- Role/Group management (mapped to Cognito groups)
+- Session management (device-based)
+- Password operations (change, reset)
+- Comprehensive unit tests (no LocalStack required)
+- Complete documentation with configuration guide
+
+### Default User Mapping ✅
+- `DefaultUserMappingService` implementation
+- Three-tier fallback strategy:
+  1. Query customer-mgmt by email
+  2. Query customer-mgmt by username
+  3. Generate deterministic UUID from IDP subject
+
+### Conditional Bean Loading ✅
+- `@ConditionalOnClass` for adapter detection
+- `@ConditionalOnProperty` for provider selection
+- Only one IDP adapter loaded at runtime
 
 ## Next Steps (Optional)
 
-### To Complete AWS Cognito Support:
-1. Clone `lib-idp-aws-cognito-impl` repository
-2. Implement `IdpAdapter` using AWS Cognito SDK
-3. Add as dependency to security-center
-4. Update `application.yml` provider to `cognito`
-
 ### To Implement Custom User Mapping:
 1. Create class implementing `UserMappingService`
-2. Query customer-mgmt by email/username
+2. Query customer-mgmt with your custom logic
 3. Return partyId
+4. Register as `@Service` (will override default)
 4. Register as `@Service`
 
 ### To Add JWT Validation to Microservices:
@@ -233,19 +256,27 @@ Requires `lib-idp-aws-cognito-impl` implementation (repository created).
 - [x] Configuration properties created
 - [x] Cache integration verified
 - [x] Keycloak adapter dependency added
+- [x] AWS Cognito adapter fully implemented
+- [x] Default UserMappingService implemented
+- [x] Conditional bean loading fixed
 - [x] Compilation successful
+- [x] All unit tests passing
 - [x] Integration tests created
 - [x] Comprehensive documentation written
-- [x] AWS Cognito repository created
+- [x] AWS Cognito README.md created
 
 ## Conclusion
 
 The **common-platform-security-center** now provides **centralized authentication and authorization** for the entire Firefly platform:
 
-✅ **Multi-IDP support** (Keycloak, Cognito, custom)  
+✅ **Multi-IDP support** (Keycloak, AWS Cognito, custom)  
 ✅ **Unified session management** with caching  
 ✅ **RESTful authentication API**  
 ✅ **Extensible architecture**  
 ✅ **Production-ready for Keycloak**  
+✅ **Production-ready for AWS Cognito**  
+✅ **Default user mapping service**  
+✅ **Comprehensive testing** (unit tests, no external dependencies)  
+✅ **Complete documentation** (architecture, setup, troubleshooting)  
 
-The system is fully functional, tested, documented, and ready for deployment!
+The system is fully functional, tested, documented, and ready for production deployment!

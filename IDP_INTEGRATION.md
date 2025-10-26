@@ -169,8 +169,8 @@ Validate IDP token.
 
 ### Supported IDPs
 
-1. **Keycloak** - `lib-idp-keycloak-impl`
-2. **AWS Cognito** - `lib-idp-aws-cognito-impl` (repository created)
+1. **Keycloak** - `lib-idp-keycloak-impl` ✅ Fully implemented
+2. **AWS Cognito** - `lib-idp-aws-cognito-impl` ✅ Fully implemented
 3. **Custom IDP** - Implement `IdpAdapter` interface
 
 ### Configuration
@@ -189,32 +189,39 @@ firefly:
       client-id: security-center
       client-secret: ${KEYCLOAK_SECRET}
       
-    # AWS Cognito configuration (when implemented)
+    # AWS Cognito configuration
     cognito:
-      region: ${AWS_REGION:us-east-1}
+      region: ${COGNITO_REGION:us-east-1}
       user-pool-id: ${COGNITO_USER_POOL_ID}
       client-id: ${COGNITO_CLIENT_ID}
       client-secret: ${COGNITO_CLIENT_SECRET}
+      connection-timeout: ${COGNITO_CONNECTION_TIMEOUT:30000}
+      request-timeout: ${COGNITO_REQUEST_TIMEOUT:60000}
 ```
 
 ## User Mapping
 
 ### IDP User → Firefly partyId
 
-The `UserMappingService` interface allows custom mapping strategies:
+The `UserMappingService` interface allows custom mapping strategies.
 
-**Example Implementation:**
+**Default Implementation:**
+The Security Center includes a `DefaultUserMappingService` that:
+1. Queries customer-mgmt by email
+2. Falls back to query by username
+3. Falls back to deterministic UUID generation from IDP subject
+
+**Custom Implementation Example:**
 ```java
 @Service
-public class CustomerMgmtUserMappingService implements UserMappingService {
+public class CustomUserMappingService implements UserMappingService {
     
-    @Autowired
-    private WebClient customerMgmtClient;
+    private final WebClient customerMgmtWebClient;
     
     @Override
     public Mono<UUID> mapToPartyId(UserInfoResponse userInfo, String username) {
         // Query customer-mgmt by email
-        return customerMgmtClient
+        return customerMgmtWebClient
             .get()
             .uri("/parties/by-email/{email}", userInfo.getEmail())
             .retrieve()
@@ -222,7 +229,7 @@ public class CustomerMgmtUserMappingService implements UserMappingService {
             .map(PartyDTO::getPartyId)
             .onErrorResume(error -> {
                 // Fallback: query by username
-                return customerMgmtClient
+                return customerMgmtWebClient
                     .get()
                     .uri("/parties/by-username/{username}", username)
                     .retrieve()
@@ -283,18 +290,65 @@ curl -X POST http://localhost:8085/api/v1/auth/logout \
 3. **AuthenticationController.java** - REST endpoints for auth
 4. **Updated core/pom.xml** - Added lib-idp-adapter dependency
 
-### Repository Created
+### IDP Adapter Repositories
 
-- **lib-idp-aws-cognito-impl**: https://github.com/firefly-oss/lib-idp-aws-cognito-impl
+- **lib-idp-adapter**: Core interface and DTOs
+- **lib-idp-keycloak-impl**: Keycloak implementation ✅
+- **lib-idp-aws-cognito-impl**: AWS Cognito implementation ✅
+
+## Configuration Details
+
+### AWS Cognito Setup
+
+1. **Create User Pool** in AWS Cognito console
+2. **Create App Client** with:
+   - Auth flows: `USER_PASSWORD_AUTH` enabled
+   - Generate client secret (optional)
+   - Token expiration configured
+3. **Create Groups** for roles
+4. **Configure Security Center**:
+   ```yaml
+   firefly:
+     security-center:
+       idp:
+         provider: cognito
+         cognito:
+           region: us-east-1
+           user-pool-id: us-east-1_XXXXXXXXX
+           client-id: your-client-id
+           client-secret: your-client-secret
+   ```
+
+### Keycloak Setup
+
+1. **Create Realm** in Keycloak
+2. **Create Client** with:
+   - Client Protocol: openid-connect
+   - Access Type: confidential
+   - Service Accounts Enabled
+3. **Create Roles**
+4. **Configure Security Center**:
+   ```yaml
+   firefly:
+     security-center:
+       idp:
+         provider: keycloak
+         keycloak:
+           server-url: http://localhost:8080
+           realm: firefly
+           client-id: security-center
+           client-secret: your-secret
+   ```
 
 ## Next Steps
 
-1. **Implement AWS Cognito adapter** in lib-idp-aws-cognito-impl
-2. **Implement UserMappingService** for customer-mgmt integration
-3. **Configure IDP provider** in application.yml
-4. **Test authentication flow** end-to-end
-5. **Add JWT validation** to other microservices
-6. **Document client integration** patterns
+1. **Choose IDP provider** (Keycloak or AWS Cognito)
+2. **Configure IDP** according to setup instructions above
+3. **Configure application.yml** with IDP settings
+4. **Deploy Security Center** microservice
+5. **Test authentication flow** end-to-end
+6. **Add JWT validation** to other microservices
+7. **Implement custom UserMappingService** if needed
 
 ## Security Considerations
 
