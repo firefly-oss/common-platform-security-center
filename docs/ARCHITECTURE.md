@@ -129,7 +129,11 @@ The `IdpAutoConfiguration` class conditionally loads the correct adapter bean ba
 1. User authenticates via IDP
    └─> Returns access token, refresh token, ID token
 
-2. Extract partyId from token claims
+2. Map IDP user to partyId:
+   ├─> Call UserMappingService.mapToPartyId()
+   ├─> Try email lookup via EmailContactsApi (customer-mgmt)
+   ├─> If not found, try username lookup via PartiesApi (customer-mgmt)
+   └─> If not found, throw IllegalStateException (authentication fails)
 
 3. Parallel enrichment:
    ├─> Fetch customer info (customer-mgmt)
@@ -144,6 +148,63 @@ The `IdpAutoConfiguration` class conditionally loads the correct adapter bean ba
 5. Cache session (Redis/Caffeine)
 
 6. Return enriched session
+```
+
+### IDP User to Party Mapping
+
+The Security Center maps IDP users to Firefly partyIds using the `UserMappingService`:
+
+```
+┌─────────────────────────────────────┐
+│   AuthenticationService             │
+└──────────────┬──────────────────────┘
+               │
+               │ uses
+               ▼
+┌─────────────────────────────────────┐
+│   UserMappingService                │
+│   (DefaultUserMappingService)       │
+└──────────────┬──────────────────────┘
+               │
+       ┌───────┴───────┐
+       ▼               ▼
+┌──────────────┐  ┌──────────────┐
+│ PartiesApi   │  │EmailContacts │
+│ (username)   │  │Api (email)   │
+└──────────────┘  └──────────────┘
+```
+
+**Mapping Strategy:**
+
+1. **Email Lookup** (Primary)
+   - Searches all parties' email contacts using `EmailContactsApi`
+   - Filters by email address from IDP user info
+   - Returns partyId if found
+
+2. **Username Lookup** (Secondary)
+   - Searches parties by `sourceSystem` field using `PartiesApi`
+   - Format: `"idp:username"` (e.g., `"idp:john.doe"`)
+   - Returns partyId if found
+
+3. **Error Handling** (No Fallbacks)
+   - If both lookups fail, throws `IllegalStateException`
+   - Authentication fails with clear error message
+   - **Important**: Parties MUST exist in customer-mgmt before authentication
+
+**Customization:**
+
+To implement custom mapping logic (e.g., auto-provisioning), create a custom `UserMappingService`:
+
+```java
+@Service
+public class CustomUserMappingService implements UserMappingService {
+    @Override
+    public Mono<UUID> mapToPartyId(UserInfoResponse userInfo, String username) {
+        // Custom logic: auto-provision party if not found
+        return findExistingParty(userInfo)
+            .switchIfEmpty(createNewParty(userInfo));
+    }
+}
 ```
 
 ### Data Model
@@ -233,14 +294,25 @@ Uses `lib-common-cache` for cache backend abstraction:
        ┌───────┴───────┐
        ▼               ▼
 ┌──────────────┐  ┌──────────────┐
-│ Redis        │  │ Caffeine     │
-│ (Production) │  │ (Dev/Test)   │
+│ Caffeine     │  │ Redis        │
+│ (Default)    │  │ (Optional)   │
 └──────────────┘  └──────────────┘
 ```
 
 ### Cache Configuration
 
-**Redis (Production):**
+**Caffeine (Default):**
+```yaml
+firefly:
+  cache:
+    default-cache-type: CAFFEINE
+    caffeine:
+      enabled: true
+      max-size: 10000
+      expire-after-write-minutes: 30
+```
+
+**Redis (Optional - for distributed deployments):**
 ```yaml
 firefly:
   cache:
@@ -250,13 +322,6 @@ firefly:
       host: localhost
       port: 6379
       key-prefix: "firefly:session"
-```
-
-**Caffeine (Development):**
-```yaml
-firefly:
-  cache:
-    default-cache-type: CAFFEINE
     caffeine:
       enabled: true
 ```

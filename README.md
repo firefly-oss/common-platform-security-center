@@ -1,7 +1,7 @@
 # Firefly Security Center
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Java](https://img.shields.io/badge/Java-17+-orange.svg)](https://openjdk.java.net/)
+[![Java](https://img.shields.io/badge/Java-21+-orange.svg)](https://openjdk.java.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
 [![Tests](https://img.shields.io/badge/Tests-20%2F20%20Passing-brightgreen.svg)](#test-coverage)
 
@@ -38,8 +38,8 @@ The Security Center acts as the **single source of truth** for user sessions acr
 
 - **🔐 Multi-IDP Support** - Switch between Keycloak and AWS Cognito via configuration
 - **📦 Session Enrichment** - Aggregates data from customer-mgmt, contract-mgmt, product-mgmt, and reference-master-data
-- **⚡ High Performance** - Redis-backed caching with intelligent TTL management
-- **🔄 Reactive Architecture** - Non-blocking, built on Spring WebFlux and Project Reactor
+- **⚡ High Performance** - Caffeine-backed caching with optional Redis support
+- **🔄 Reactive Architecture** - Non-blocking, built on Spring WebFlux and Project Reactor with Java 21 Virtual Threads
 - **🔌 Exportable Library** - Other services import `FireflySessionManager` for session access
 - **✅ Production Ready** - 100% test coverage with Testcontainers
 
@@ -171,28 +171,65 @@ public class SessionAggregationService {
 - `common-platform-product-mgmt-sdk` - Product information
 - `common-platform-reference-master-data-sdk` - Roles and permissions
 
-#### 3. **Resilient Design**
+#### 3. **IDP User to Party Mapping**
 
-If downstream services are unavailable, the Security Center gracefully degrades:
+The Security Center maps IDP users to Firefly partyIds using the customer-mgmt SDK:
+
+```java
+@Service
+public class DefaultUserMappingService implements UserMappingService {
+    private final PartiesApi partiesApi;
+    private final EmailContactsApi emailContactsApi;
+
+    public Mono<UUID> mapToPartyId(UserInfoResponse userInfo, String username) {
+        // 1. Try email lookup
+        if (userInfo.getEmail() != null) {
+            return findPartyByEmail(userInfo.getEmail())
+                .onErrorResume(error -> {
+                    // 2. Try username lookup
+                    if (username != null) {
+                        return findPartyByUsername(username);
+                    }
+                    // 3. No fallback - party MUST exist
+                    return Mono.error(new IllegalStateException(
+                        "No party found for IDP user. Party must exist before authentication."));
+                });
+        }
+        return findPartyByUsername(username);
+    }
+}
+```
+
+**Mapping Strategy:**
+- ✅ Email-based lookup: Searches all parties' email contacts
+- ✅ Username-based lookup: Searches parties by `sourceSystem` field (format: `"idp:username"`)
+- ✅ **No fallbacks**: Authentication fails if party not found
+- ✅ **Data consistency**: Ensures all sessions have valid partyIds
+
+**Important**: Parties must exist in customer-mgmt before users can authenticate. This ensures data consistency across all microservices.
+
+#### 4. **Error Propagation**
+
+The Security Center follows a **fail-fast** approach with proper error propagation:
 
 ```java
 public Mono<CustomerInfo> resolveCustomerInfo(UUID partyId) {
     return partiesApi.getPartyById(partyId)
         .flatMap(party -> enrichCustomerInfo(party))
-        .onErrorResume(error -> {
-            log.warn("Using fallback customer info for partyId: {}", partyId);
-            return Mono.just(createFallbackCustomerInfo(partyId));
-        });
+        .doOnError(error ->
+            log.error("Failed to fetch customer info for partyId: {}", partyId, error));
+    // Errors propagate to caller - no fallbacks
 }
 ```
 
-**Fallback Strategy:**
-- ✅ Authentication still succeeds (IDP tokens are valid)
-- ✅ Session is created with minimal data
-- ✅ Enrichment retried on next session access
-- ⚠️ Authorization may be limited (no contracts = no permissions)
+**Error Handling Principles:**
+- ✅ All errors propagate to the API layer
+- ✅ Clear error messages for debugging
+- ✅ No silent failures or placeholder data
+- ✅ HTTP 500 returned with error details
+- ⚠️ Ensure downstream services are available for authentication to succeed
 
-#### 4. **High-Performance Caching**
+#### 5. **High-Performance Caching**
 
 Sessions are cached to avoid repeated calls to downstream services:
 
@@ -207,10 +244,10 @@ Subsequent Requests (within 30 min):
 ```
 
 **Cache Backends:**
-- **Redis** - Distributed cache for production (multiple instances)
-- **Caffeine** - In-memory cache for development (single instance)
+- **Caffeine** - In-memory cache (default, recommended for single instance)
+- **Redis** - Distributed cache for production (multiple instances, optional)
 
-#### 5. **Exportable Session Library**
+#### 6. **Exportable Session Library**
 
 Other microservices don't call the Security Center's REST API. Instead, they import the session library:
 
@@ -387,9 +424,9 @@ This guide will walk you through setting up and running the Security Center micr
 
 Before you begin, ensure you have:
 
-- **Java 17+** - [Download OpenJDK](https://openjdk.org/)
+- **Java 21+** - [Download OpenJDK](https://openjdk.org/)
 - **Maven 3.8+** - [Download Maven](https://maven.apache.org/download.cgi)
-- **Docker** (optional) - For running Keycloak/Redis locally
+- **Docker** (optional) - For running Keycloak locally
 - **Git** - To clone the repository
 
 ### Step 1: Clone and Build
@@ -728,12 +765,12 @@ Cache in Redis/Caffeine
 Return enriched session to client
 ```
 
-**Note:** If downstream services are not available, the Security Center will:
-- Use fallback data for customer info
-- Return empty contracts list
-- Still create a valid session with IDP tokens
+**Note:** If downstream services are not available:
+- **customer-mgmt**: Authentication will fail (required for user-to-party mapping)
+- **contract-mgmt, product-mgmt, reference-master-data**: Session enrichment will fail
+- **No fallback data**: All errors propagate to the client with clear error messages
 
-This ensures authentication works even if enrichment services are temporarily unavailable.
+This ensures data consistency and prevents sessions with invalid or placeholder data.
 
 ---
 
@@ -766,9 +803,9 @@ server:
 ```
 
 **Downstream services not available**
-- This is OK for testing! The Security Center will use fallback data
-- Sessions will still be created with IDP tokens
-- Enrichment will happen when services become available
+- **customer-mgmt is required**: Authentication will fail without it
+- **Other services**: Session enrichment will fail, but you can test IDP integration
+- Start all required services for full functionality testing
 
 **Redis connection failed**
 - Switch to Caffeine cache for local development
@@ -949,12 +986,15 @@ The `CognitoIntegrationTest` is **disabled by default** because it requires a **
 
 ## Technology Stack
 
+- **Java 21** - With Virtual Threads enabled
 - **Spring Boot 3.x** - Application framework
 - **Spring WebFlux** - Reactive web
 - **Project Reactor** - Reactive streams
-- **Redis/Caffeine** - Session caching
-- **Keycloak/Cognito** - Identity providers
+- **Caffeine Cache** - High-performance in-memory caching (default)
+- **Redis** - Optional distributed caching
+- **Keycloak/AWS Cognito** - Identity providers
 - **Testcontainers** - Integration testing
+- **Maven** - Build and dependency management
 
 ## License
 

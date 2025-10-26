@@ -767,15 +767,16 @@ redis-cli -h localhost -p 6379 -a firefly123 TTL "firefly:session:YOUR_SESSION_I
 
 **Problem:** Customer/Contract/Product services are not running.
 
-**Impact:** Session enrichment will fail, but authentication still works.
+**Impact:** Authentication will fail if customer-mgmt is not available (required for user-to-party mapping).
 
 **Solution:**
-- This is OK for testing! Sessions will be created with fallback data.
-- Check logs for warnings:
+- **customer-mgmt is required**: Must be running for authentication to succeed
+- **Other services are optional**: contract-mgmt, product-mgmt, reference-master-data can be unavailable
+- Check logs for errors:
   ```
-  WARN - Using fallback customer info for partyId: xxx
+  ERROR - Failed to fetch customer info for partyId: xxx
   ```
-- Start downstream services or use mock data for testing.
+- Start required downstream services before testing authentication
 
 #### 5. Port already in use
 

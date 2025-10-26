@@ -186,42 +186,66 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
 {
   "sessionId": "550e8400-e29b-41d4-a716-446655440000",
   "partyId": "123e4567-e89b-12d3-a456-426614174000",
-  "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "idToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "expiresAt": "2025-10-26T20:54:00Z",
-  "customer": {
+  "customerInfo": {
     "partyId": "123e4567-e89b-12d3-a456-426614174000",
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "john.doe@example.com"
+    "partyKind": "NATURAL_PERSON",
+    "tenantId": "tenant-123",
+    "fullName": "John Doe",
+    "preferredLanguage": "en",
+    "email": "john.doe@example.com",
+    "phoneNumber": "+1234567890",
+    "isActive": true
   },
   "activeContracts": [
     {
       "contractId": "789e0123-e45b-67d8-a901-234567890abc",
       "contractNumber": "CNT-2025-001",
-      "status": "ACTIVE",
+      "contractStatus": "ACTIVE",
+      "startDate": "2025-01-01T00:00:00",
+      "contractPartyId": "cp-123",
       "product": {
         "productId": "456e7890-e12b-34d5-a678-901234567def",
         "productName": "Premium Checking Account",
-        "productType": "CHECKING"
+        "productCode": "CHK-PREM",
+        "productType": "CHECKING",
+        "productStatus": "ACTIVE"
       },
       "roleInContract": {
         "roleId": "role-123",
-        "roleName": "PRIMARY_HOLDER",
+        "roleCode": "PRIMARY_HOLDER",
+        "name": "Primary Account Holder",
+        "isActive": true,
         "scopes": [
           {
+            "scopeId": "scope-1",
+            "roleId": "role-123",
+            "scopeCode": "READ_BALANCE",
+            "scopeName": "Read Balance",
             "actionType": "READ",
-            "resourceType": "BALANCE"
+            "resourceType": "BALANCE",
+            "isActive": true
           },
           {
+            "scopeId": "scope-2",
+            "roleId": "role-123",
+            "scopeCode": "WRITE_TRANSACTION",
+            "scopeName": "Write Transaction",
             "actionType": "WRITE",
-            "resourceType": "TRANSACTION"
+            "resourceType": "TRANSACTION",
+            "isActive": true
           }
         ]
-      }
+      },
+      "isActive": true,
+      "createdAt": "2025-01-01T00:00:00"
     }
-  ]
+  ],
+  "createdAt": "2025-10-26T19:54:00",
+  "lastAccessedAt": "2025-10-26T20:54:00",
+  "expiresAt": "2025-10-26T21:24:00",
+  "ipAddress": "192.168.1.100",
+  "userAgent": "Mozilla/5.0...",
+  "status": "ACTIVE"
 }
 ```
 
@@ -247,6 +271,195 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
 ```bash
 curl -X GET http://localhost:8085/api/v1/sessions/550e8400-e29b-41d4-a716-446655440000 \
   -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+---
+
+### 2. Create or Get Session
+
+Create a new session or retrieve existing session from X-Party-Id header.
+
+**Endpoint:** `POST /api/v1/sessions`
+
+**Headers:**
+```
+X-Party-Id: 123e4567-e89b-12d3-a456-426614174000
+```
+
+**Response:** `200 OK`
+```json
+{
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "partyId": "123e4567-e89b-12d3-a456-426614174000",
+  "customerInfo": {
+    "partyId": "123e4567-e89b-12d3-a456-426614174000",
+    "fullName": "John Doe",
+    "email": "john.doe@example.com",
+    "phoneNumber": "+1234567890"
+  },
+  "activeContracts": [...],
+  "createdAt": "2025-10-26T19:54:00",
+  "lastAccessedAt": "2025-10-26T20:54:00",
+  "expiresAt": "2025-10-26T21:24:00",
+  "status": "ACTIVE"
+}
+```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:8085/api/v1/sessions \
+  -H "X-Party-Id: 123e4567-e89b-12d3-a456-426614174000"
+```
+
+---
+
+### 3. Get Session by Party ID
+
+Retrieve session details by party ID.
+
+**Endpoint:** `GET /api/v1/sessions/party/{partyId}`
+
+**Response:** `200 OK`
+```json
+{
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "partyId": "123e4567-e89b-12d3-a456-426614174000",
+  "customerInfo": {...},
+  "activeContracts": [...],
+  "status": "ACTIVE"
+}
+```
+
+**Error Responses:**
+
+- `404 Not Found` - No session found for this party
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:8085/api/v1/sessions/party/123e4567-e89b-12d3-a456-426614174000
+```
+
+---
+
+### 4. Invalidate Session
+
+Invalidate a specific session by session ID.
+
+**Endpoint:** `DELETE /api/v1/sessions/{sessionId}`
+
+**Response:** `204 No Content`
+
+**cURL Example:**
+```bash
+curl -X DELETE http://localhost:8085/api/v1/sessions/550e8400-e29b-41d4-a716-446655440000
+```
+
+---
+
+### 5. Invalidate Sessions by Party ID
+
+Invalidate all sessions for a specific party.
+
+**Endpoint:** `DELETE /api/v1/sessions/party/{partyId}`
+
+**Response:** `204 No Content`
+
+**cURL Example:**
+```bash
+curl -X DELETE http://localhost:8085/api/v1/sessions/party/123e4567-e89b-12d3-a456-426614174000
+```
+
+---
+
+### 6. Refresh Session
+
+Refresh session data by re-fetching from downstream services.
+
+**Endpoint:** `POST /api/v1/sessions/{sessionId}/refresh`
+
+**Response:** `200 OK`
+```json
+{
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "partyId": "123e4567-e89b-12d3-a456-426614174000",
+  "customerInfo": {...},
+  "activeContracts": [...],
+  "lastAccessedAt": "2025-10-26T20:55:00",
+  "status": "ACTIVE"
+}
+```
+
+**Error Responses:**
+
+- `404 Not Found` - Session not found
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:8085/api/v1/sessions/550e8400-e29b-41d4-a716-446655440000/refresh
+```
+
+---
+
+### 7. Validate Session
+
+Check if a session is valid and active.
+
+**Endpoint:** `GET /api/v1/sessions/{sessionId}/validate`
+
+**Response:** `200 OK`
+```json
+true
+```
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:8085/api/v1/sessions/550e8400-e29b-41d4-a716-446655440000/validate
+```
+
+---
+
+### 8. Check Product Access
+
+Check if a party has access to a specific product.
+
+**Endpoint:** `GET /api/v1/sessions/access-check`
+
+**Query Parameters:**
+- `partyId` (UUID, required) - Party ID
+- `productId` (UUID, required) - Product ID
+
+**Response:** `200 OK`
+```json
+true
+```
+
+**cURL Example:**
+```bash
+curl -X GET "http://localhost:8085/api/v1/sessions/access-check?partyId=123e4567-e89b-12d3-a456-426614174000&productId=456e7890-e12b-34d5-a678-901234567def"
+```
+
+---
+
+### 9. Check Permission
+
+Check if a party has a specific permission on a product.
+
+**Endpoint:** `GET /api/v1/sessions/permission-check`
+
+**Query Parameters:**
+- `partyId` (UUID, required) - Party ID
+- `productId` (UUID, required) - Product ID
+- `actionType` (string, required) - Action type (e.g., READ, WRITE, DELETE)
+- `resourceType` (string, optional) - Resource type (e.g., BALANCE, TRANSACTION)
+
+**Response:** `200 OK`
+```json
+true
+```
+
+**cURL Example:**
+```bash
+curl -X GET "http://localhost:8085/api/v1/sessions/permission-check?partyId=123e4567-e89b-12d3-a456-426614174000&productId=456e7890-e12b-34d5-a678-901234567def&actionType=READ&resourceType=BALANCE"
 ```
 
 ---
@@ -414,10 +627,17 @@ interface ContractInfo {
 
 interface ProductInfo {
   productId: string;
+  productCatalogId: string;
+  productSubtypeId: string;
   productName: string;
+  productCode: string;
+  productDescription: string;
   productType: string;
-  description: string;
-  isActive: boolean;
+  productStatus: string;
+  launchDate: string;                // ISO 8601 date
+  endDate: string;                   // ISO 8601 date
+  dateCreated: string;               // ISO 8601 timestamp
+  dateUpdated: string;               // ISO 8601 timestamp
 }
 
 interface RoleInfo {
