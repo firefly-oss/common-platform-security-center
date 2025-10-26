@@ -1,0 +1,498 @@
+openapi: 3.0.3
+info:
+  title: Firefly Security Center API
+  description: |
+    Security Center API for authentication and session management.
+    
+    This API provides:
+    - IDP-based authentication (Keycloak, AWS Cognito)
+    - Session management with enriched context
+    - Contract-based authorization
+  version: 1.0.0
+  contact:
+    name: Firefly Software Solutions Inc
+    email: dev@getfirefly.io
+
+servers:
+  - url: http://localhost:8085
+    description: Local development server
+  - url: https://api.getfirefly.io/security-center
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: Authentication operations (login, logout, refresh, introspect)
+  - name: Sessions
+    description: Session management operations
+
+paths:
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login
+      description: Authenticate user via IDP and create Firefly session
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '401':
+          description: Authentication failed
+        '400':
+          description: Invalid request
+
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout
+      description: Invalidate both IDP session and Firefly session
+      operationId: logout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '204':
+          description: Successfully logged out
+        '500':
+          description: Internal server error
+
+  /api/v1/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh Token
+      description: Refresh IDP tokens and update session
+      operationId: refresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Tokens refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '401':
+          description: Invalid or expired refresh token
+
+  /api/v1/auth/introspect:
+    post:
+      tags:
+        - Authentication
+      summary: Introspect Token
+      description: Validate IDP access token
+      operationId: introspect
+      parameters:
+        - name: accessToken
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Token introspection result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntrospectionResponse'
+
+  /api/v1/sessions:
+    post:
+      tags:
+        - Sessions
+      summary: Create or Get Session
+      description: Creates or retrieves session from X-Party-Id header
+      operationId: createOrGetSession
+      responses:
+        '200':
+          description: Session created or retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionContextDTO'
+        '400':
+          description: Bad request
+
+  /api/v1/sessions/{sessionId}:
+    get:
+      tags:
+        - Sessions
+      summary: Get Session by ID
+      description: Retrieve session details by session ID
+      operationId: getSessionById
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionContextDTO'
+        '404':
+          description: Session not found
+    delete:
+      tags:
+        - Sessions
+      summary: Invalidate Session
+      description: Invalidates a session by ID
+      operationId: invalidateSession
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Session invalidated
+
+  /api/v1/sessions/party/{partyId}:
+    get:
+      tags:
+        - Sessions
+      summary: Get Session by Party ID
+      description: Retrieve session by party ID
+      operationId: getSessionByPartyId
+      parameters:
+        - name: partyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionContextDTO'
+        '404':
+          description: Session not found
+    delete:
+      tags:
+        - Sessions
+      summary: Invalidate Sessions by Party ID
+      description: Invalidates all sessions for a party
+      operationId: invalidateSessionsByPartyId
+      parameters:
+        - name: partyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Sessions invalidated
+
+  /api/v1/sessions/{sessionId}/refresh:
+    post:
+      tags:
+        - Sessions
+      summary: Refresh Session
+      description: Refreshes a session by ID
+      operationId: refreshSession
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionContextDTO'
+        '404':
+          description: Session not found
+
+  /api/v1/sessions/{sessionId}/validate:
+    get:
+      tags:
+        - Sessions
+      summary: Validate Session
+      description: Validates if a session is still active
+      operationId: validateSession
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: boolean
+
+  /api/v1/sessions/permission-check:
+    get:
+      tags:
+        - Sessions
+      summary: Check Permission
+      description: Checks if party has specific permission on product
+      operationId: checkPermission
+      parameters:
+        - name: partyId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: productId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: actionType
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: resourceType
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Permission check result
+          content:
+            application/json:
+              schema:
+                type: boolean
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        scope:
+          type: string
+
+    RefreshRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+
+    LogoutRequest:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+        - sessionId
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        sessionId:
+          type: string
+
+    AuthenticationResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        idToken:
+          type: string
+        tokenType:
+          type: string
+        expiresIn:
+          type: integer
+          format: int64
+        sessionId:
+          type: string
+        partyId:
+          type: string
+          format: uuid
+
+    IntrospectionResponse:
+      type: object
+      properties:
+        active:
+          type: boolean
+        username:
+          type: string
+        exp:
+          type: integer
+          format: int64
+
+    SessionContextDTO:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        partyId:
+          type: string
+          format: uuid
+        customerInfo:
+          $ref: '#/components/schemas/CustomerInfoDTO'
+        activeContracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContractInfoDTO'
+        createdAt:
+          type: string
+          format: date-time
+        lastAccessedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        ipAddress:
+          type: string
+        userAgent:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, EXPIRED, INVALIDATED, LOCKED]
+
+    CustomerInfoDTO:
+      type: object
+      properties:
+        partyId:
+          type: string
+          format: uuid
+        partyKind:
+          type: string
+        tenantId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        preferredLanguage:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        taxIdNumber:
+          type: string
+        isActive:
+          type: boolean
+
+    ContractInfoDTO:
+      type: object
+      properties:
+        contractId:
+          type: string
+          format: uuid
+        contractNumber:
+          type: string
+        contractStatus:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        contractPartyId:
+          type: string
+          format: uuid
+        roleInContract:
+          $ref: '#/components/schemas/RoleInfoDTO'
+        product:
+          $ref: '#/components/schemas/ProductInfoDTO'
+        isActive:
+          type: boolean
+
+    ProductInfoDTO:
+      type: object
+      properties:
+        productId:
+          type: string
+          format: uuid
+        productName:
+          type: string
+        productType:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: boolean
+
+    RoleInfoDTO:
+      type: object
+      properties:
+        roleId:
+          type: string
+          format: uuid
+        roleCode:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: boolean
+        scopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleScopeInfoDTO'
+
+    RoleScopeInfoDTO:
+      type: object
+      properties:
+        scopeId:
+          type: string
+          format: uuid
+        roleId:
+          type: string
+          format: uuid
+        scopeCode:
+          type: string
+        scopeName:
+          type: string
+        description:
+          type: string
+        actionType:
+          type: string
+        resourceType:
+          type: string
+        isActive:
+          type: boolean
+
