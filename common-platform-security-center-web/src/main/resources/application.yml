@@ -1,12 +1,36 @@
-server:
-  port: 8085
-
 spring:
   application:
-    name: security-center
-  
+    name: common-platform-security-center
+    version: 1.0.0
+    description: Security Center - Authentication and Session Management
+    team:
+      name: Firefly Software Solutions Inc
+      email: dev@getfirefly.io
+
   webflux:
     base-path: /
+
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  address: ${SERVER_ADDRESS:localhost}
+  port: ${SERVER_PORT:8085}
+  shutdown: graceful
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tagsSorter: alpha
+    operationsSorter: method
+    docExpansion: none
+    filter: true
+  packages-to-scan: com.firefly.security.center.web.controllers
+  paths-to-match: /api/**
 
 firefly:
   # Firefly Common Cache configuration
@@ -60,18 +84,19 @@ firefly:
       timeout-minutes: 30
       cleanup-interval-minutes: 15
 
+    # Downstream microservice SDK clients
     clients:
       customer-mgmt:
-        base-url: ${CUSTOMER_MGMT_URL:http://localhost:8081}
+        base-url: ${CUSTOMER_MGMT_URL:http://localhost:8080}
         timeout-seconds: 10
       contract-mgmt:
-        base-url: ${CONTRACT_MGMT_URL:http://localhost:8082}
+        base-url: ${CONTRACT_MGMT_URL:http://localhost:8081}
         timeout-seconds: 10
       product-mgmt:
-        base-url: ${PRODUCT_MGMT_URL:http://localhost:8083}
+        base-url: ${PRODUCT_MGMT_URL:http://localhost:8082}
         timeout-seconds: 10
       reference-master-data:
-        base-url: ${REFERENCE_MASTER_DATA_URL:http://localhost:8084}
+        base-url: ${REFERENCE_MASTER_DATA_URL:http://localhost:8083}
         timeout-seconds: 10
 
 management:
@@ -88,9 +113,53 @@ management:
         enabled: true
 
 logging:
-  level:
-    com.firefly.security.center: DEBUG
-    org.springframework.web: INFO
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: INFO
+    com.firefly: DEBUG
+    org.springframework.web: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: testing
+
+logging:
+  level:
+    root: INFO
+    com.firefly: DEBUG
+    org.springframework.web: INFO
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: WARN
+    com.firefly: INFO
+    org.springframework: WARN
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

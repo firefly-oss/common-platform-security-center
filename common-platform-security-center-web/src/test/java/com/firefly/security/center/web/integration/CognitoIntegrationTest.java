@@ -44,7 +44,17 @@ import static org.mockito.Mockito.when;
 
 /**
  * Complete end-to-end integration test for Security Center with AWS Cognito IDP via LocalStack PRO.
- * 
+ *
+ * <p><strong>⚠️ DISABLED - Requires LocalStack Pro License</strong></p>
+ * <p>This test requires a valid LocalStack Pro license token set in the environment variable
+ * <code>LOCALSTACK_AUTH_TOKEN</code>. To run this test:
+ * <ol>
+ *   <li>Obtain a LocalStack Pro license from https://localstack.cloud/pricing</li>
+ *   <li>Set the environment variable: <code>export LOCALSTACK_AUTH_TOKEN="your-token"</code></li>
+ *   <li>Remove the <code>@Disabled</code> annotation below</li>
+ *   <li>Run the test: <code>mvn test -Dtest=CognitoIntegrationTest</code></li>
+ * </ol>
+ *
  * <p>Tests the full authentication flow with LocalStack PRO emulating AWS Cognito:
  * <ol>
  *   <li>LocalStack PRO container startup</li>
@@ -56,7 +66,7 @@ import static org.mockito.Mockito.when;
  *   <li>Token operations (getUserInfo)</li>
  *   <li>Verify IDP adapter switching (Cognito vs Keycloak)</li>
  * </ol>
- * 
+ *
  * <p><strong>Integration Test</strong> - Verifies:
  * <ul>
  *   <li>AWS Cognito IDP adapter integration</li>
@@ -64,10 +74,13 @@ import static org.mockito.Mockito.when;
  *   <li>IDP provider switching via properties</li>
  *   <li>Session enrichment with mocked SDK data</li>
  * </ul>
- * 
+ *
  * <p>Expected execution time: ~25-30 seconds (LocalStack PRO startup + tests)
+ *
+ * @see <a href="https://localstack.cloud/pricing">LocalStack Pro Pricing</a>
  */
 @Slf4j
+@Disabled("Requires LocalStack Pro license - set LOCALSTACK_AUTH_TOKEN environment variable to enable")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
 

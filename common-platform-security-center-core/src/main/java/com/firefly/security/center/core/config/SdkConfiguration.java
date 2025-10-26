@@ -43,15 +43,16 @@ import org.springframework.context.annotation.Configuration;
  * <p><strong>Required Configuration:</strong></p>
  * <pre>
  * firefly:
- *   clients:
- *     customer-mgmt:
- *       base-url: http://localhost:8081
- *     contract-mgmt:
- *       base-url: http://localhost:8082
- *     product-mgmt:
- *       base-url: http://localhost:8083
- *     reference-master-data:
- *       base-url: http://localhost:8084
+ *   security-center:
+ *     clients:
+ *       customer-mgmt:
+ *         base-url: http://localhost:8081
+ *       contract-mgmt:
+ *         base-url: http://localhost:8082
+ *       product-mgmt:
+ *         base-url: http://localhost:8083
+ *       reference-master-data:
+ *         base-url: http://localhost:8084
  * </pre>
  */
 @Configuration
@@ -62,9 +63,9 @@ public class SdkConfiguration {
     
     @Bean(name = "customerMgmtApiClient")
     public com.firefly.core.customer.sdk.invoker.ApiClient customerMgmtApiClient(
-            @Value("${firefly.clients.customer-mgmt.base-url}") String baseUrl) {
+            @Value("${firefly.security-center.clients.customer-mgmt.base-url}") String baseUrl) {
         log.info("Configuring Customer Management SDK with base URL: {}", baseUrl);
-        com.firefly.core.customer.sdk.invoker.ApiClient client = 
+        com.firefly.core.customer.sdk.invoker.ApiClient client =
             new com.firefly.core.customer.sdk.invoker.ApiClient();
         client.setBasePath(baseUrl);
         return client;
@@ -104,9 +105,9 @@ public class SdkConfiguration {
     
     @Bean(name = "contractMgmtApiClient")
     public com.firefly.core.contract.sdk.invoker.ApiClient contractMgmtApiClient(
-            @Value("${firefly.clients.contract-mgmt.base-url}") String baseUrl) {
+            @Value("${firefly.security-center.clients.contract-mgmt.base-url}") String baseUrl) {
         log.info("Configuring Contract Management SDK with base URL: {}", baseUrl);
-        com.firefly.core.contract.sdk.invoker.ApiClient client = 
+        com.firefly.core.contract.sdk.invoker.ApiClient client =
             new com.firefly.core.contract.sdk.invoker.ApiClient();
         client.setBasePath(baseUrl);
         return client;
@@ -134,9 +135,9 @@ public class SdkConfiguration {
     
     @Bean(name = "productMgmtApiClient")
     public com.firefly.common.product.sdk.invoker.ApiClient productMgmtApiClient(
-            @Value("${firefly.clients.product-mgmt.base-url}") String baseUrl) {
+            @Value("${firefly.security-center.clients.product-mgmt.base-url}") String baseUrl) {
         log.info("Configuring Product Management SDK with base URL: {}", baseUrl);
-        com.firefly.common.product.sdk.invoker.ApiClient client = 
+        com.firefly.common.product.sdk.invoker.ApiClient client =
             new com.firefly.common.product.sdk.invoker.ApiClient();
         client.setBasePath(baseUrl);
         return client;
@@ -152,9 +153,9 @@ public class SdkConfiguration {
     
     @Bean(name = "referenceMasterDataApiClient")
     public com.firefly.common.reference.master.data.sdk.invoker.ApiClient referenceMasterDataApiClient(
-            @Value("${firefly.clients.reference-master-data.base-url}") String baseUrl) {
+            @Value("${firefly.security-center.clients.reference-master-data.base-url}") String baseUrl) {
         log.info("Configuring Reference Master Data SDK with base URL: {}", baseUrl);
-        com.firefly.common.reference.master.data.sdk.invoker.ApiClient client = 
+        com.firefly.common.reference.master.data.sdk.invoker.ApiClient client =
             new com.firefly.common.reference.master.data.sdk.invoker.ApiClient();
         client.setBasePath(baseUrl);
         return client;

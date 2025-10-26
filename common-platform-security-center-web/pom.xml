@@ -140,13 +140,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- WebTestClient for integration testing -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-            <scope>test</scope>
-        </dependency>
-        
+
         <!-- AWS SDK for Cognito Integration Testing -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
