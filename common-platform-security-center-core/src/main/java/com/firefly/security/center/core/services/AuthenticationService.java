@@ -181,27 +181,38 @@ public class AuthenticationService {
     }
 
     /**
-     * Map IDP user to Firefly partyId
-     * 
-     * This can be customized via UserMappingService to support different mapping strategies:
-     * - Username-based mapping
-     * - Email-based mapping
-     * - External ID mapping
-     * - Custom attribute mapping
+     * Map IDP user to Firefly partyId using customer-mgmt SDK.
+     *
+     * <p>This delegates to {@link UserMappingService} which queries customer-mgmt
+     * to find the partyId associated with the IDP user.
+     *
+     * <p><strong>Mapping Strategies (via DefaultUserMappingService):</strong></p>
+     * <ol>
+     *   <li>Email-based mapping: Searches all parties' email contacts</li>
+     *   <li>Username-based mapping: Searches parties by sourceSystem field</li>
+     *   <li>If not found: Throws IllegalStateException - party MUST exist before authentication</li>
+     * </ol>
+     *
+     * <p><strong>Important:</strong> Parties must exist in customer-mgmt before users can authenticate.
+     * If a party is not found, authentication will fail with an error.
+     *
+     * <p><strong>Customization:</strong> Provide your own {@code @Service} implementation
+     * of {@link UserMappingService} to override the default behavior (e.g., auto-provision parties).
+     *
+     * @param userInfo IDP user information from /userinfo endpoint
+     * @param username Username from authentication (may be null)
+     * @return Mono emitting the partyId
+     * @throws IllegalStateException if UserMappingService is not configured or party not found
      */
     private Mono<UUID> mapUserToPartyId(UserInfoResponse userInfo, String username) {
-        if (userMappingService != null) {
-            return userMappingService.mapToPartyId(userInfo, username);
+        if (userMappingService == null) {
+            log.error("❌ No UserMappingService configured! This should not happen - DefaultUserMappingService should be auto-configured.");
+            log.error("❌ Check Spring configuration and ensure customer-mgmt SDK beans are available.");
+            return Mono.error(new IllegalStateException(
+                    "No UserMappingService configured. Cannot map IDP user to partyId."));
         }
-        
-        // Default: try to parse username as UUID or use a lookup service
-        // In production, this should query customer-mgmt to find partyId by username/email
-        log.warn("No UserMappingService configured, using fallback mapping");
-        
-        // For now, return a placeholder - in real implementation, query customer-mgmt
-        return Mono.just(UUID.randomUUID())
-                .doOnNext(partyId -> log.warn("Using generated partyId: {} for user: {}", 
-                        partyId, username != null ? username : userInfo.getSub()));
+
+        return userMappingService.mapToPartyId(userInfo, username);
     }
 
     /**

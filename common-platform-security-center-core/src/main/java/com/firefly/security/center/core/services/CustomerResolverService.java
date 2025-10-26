@@ -72,15 +72,10 @@ public class CustomerResolverService {
 
         return partiesApi.getPartyById(partyId)
                 .flatMap(party -> enrichCustomerInfo(party))
-                .doOnSuccess(customer -> 
+                .doOnSuccess(customer ->
                     log.debug("Successfully fetched enriched customer info for partyId: {}", partyId))
-                .doOnError(error -> 
-                    log.error("Failed to fetch customer info for partyId: {}", partyId, error))
-                .onErrorResume(error -> {
-                    log.warn("Using fallback customer info for partyId: {}, reason: {}", 
-                            partyId, error.getMessage());
-                    return Mono.just(createFallbackCustomerInfo(partyId));
-                });
+                .doOnError(error ->
+                    log.error("Failed to fetch customer info for partyId: {}", partyId, error));
     }
 
     /**
@@ -134,20 +129,16 @@ public class CustomerResolverService {
             return naturalPersonsApi.getNaturalPersonByPartyId(partyId)
                     .map(this::buildFullNameFromNaturalPerson)
                     .doOnSuccess(name -> log.debug("Fetched natural person name for partyId: {}", partyId))
-                    .onErrorResume(error -> {
-                        log.warn("Failed to fetch natural person for partyId: {}, using fallback", partyId);
-                        return Mono.just("Unknown Person");
-                    });
+                    .doOnError(error -> log.error("Failed to fetch natural person for partyId: {}", partyId, error));
         } else if ("ORGANIZATION".equalsIgnoreCase(partyKind)) {
             return legalEntitiesApi.getLegalEntityByPartyId(partyId)
                     .map(this::buildFullNameFromLegalEntity)
                     .doOnSuccess(name -> log.debug("Fetched legal entity name for partyId: {}", partyId))
-                    .onErrorResume(error -> {
-                        log.warn("Failed to fetch legal entity for partyId: {}, using fallback", partyId);
-                        return Mono.just("Unknown Entity");
-                    });
+                    .doOnError(error -> log.error("Failed to fetch legal entity for partyId: {}", partyId, error));
         } else {
-            return Mono.just("Party-" + partyId);
+            return Mono.error(new IllegalArgumentException(
+                    "Unknown party kind: " + partyKind + " for partyId: " + partyId +
+                    ". Expected 'INDIVIDUAL' or 'ORGANIZATION'."));
         }
     }
 
@@ -231,17 +222,5 @@ public class CustomerResolverService {
                     log.debug("Failed to fetch phone for partyId: {}", partyId);
                     return Mono.empty();
                 });
-    }
-
-    /**
-     * Creates fallback customer info when SDK call fails.
-     */
-    private CustomerInfoDTO createFallbackCustomerInfo(UUID partyId) {
-        return CustomerInfoDTO.builder()
-                .partyId(partyId)
-                .partyKind("UNKNOWN")
-                .fullName("Unknown Customer")
-                .isActive(false)
-                .build();
     }
 }

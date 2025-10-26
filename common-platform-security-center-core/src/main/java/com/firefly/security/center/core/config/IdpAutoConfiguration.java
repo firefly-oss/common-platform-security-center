@@ -68,7 +68,7 @@ public class IdpAutoConfiguration {
     @ComponentScan(basePackages = {"com.firefly.idp.adapter", "com.firefly.idp.properties", "com.firefly.idp.config"})
     static class KeycloakIdpConfiguration {
         public KeycloakIdpConfiguration() {
-            log.info("✅ Loading Keycloak IDP adapter configuration");
+            log.info("Loading Keycloak IDP adapter configuration");
         }
     }
 
@@ -81,7 +81,7 @@ public class IdpAutoConfiguration {
     @ComponentScan(basePackages = "com.firefly.idp.cognito")
     static class CognitoIdpConfiguration {
         public CognitoIdpConfiguration() {
-            log.info("✅ Loading AWS Cognito IDP adapter configuration");
+            log.info("Loading AWS Cognito IDP adapter configuration");
         }
     }
 

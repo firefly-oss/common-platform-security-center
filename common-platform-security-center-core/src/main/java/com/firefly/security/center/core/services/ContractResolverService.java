@@ -121,30 +121,37 @@ public class ContractResolverService {
                     ? fullContract.getProduct().getProductId() 
                     : null;
 
-                // Build the zip with role and product if productId exists
+                // Fetch role (required) and product (optional)
                 Mono<RoleInfoDTO> roleMono = fetchRoleWithScopes(contractInfo.getRoleInContract().getRoleId());
-                Mono<ProductInfoDTO> productMono = productId != null 
-                    ? fetchProduct(productId) 
-                    : Mono.just(createFallbackProduct(null));
 
-                return Mono.zip(roleMono, productMono)
-                    .map(tuple -> {
-                        RoleInfoDTO roleWithScopes = tuple.getT1();
-                        ProductInfoDTO productInfo = tuple.getT2();
-
-                        return contractInfo.toBuilder()
-                                .contractNumber(fullContract.getContractNumber())
-                                .contractStatus(fullContract.getContractStatus())
-                                .startDate(fullContract.getStartDate())
-                                .endDate(fullContract.getEndDate())
-                                .roleInContract(roleWithScopes)
-                                .product(productInfo)
-                                .build();
-                    });
-            })
-            .onErrorResume(error -> {
-                log.warn("Failed to fully enrich contract: {}, returning partial data", contractId, error);
-                return Mono.just(contractInfo);
+                if (productId != null) {
+                    // Both role and product
+                    Mono<ProductInfoDTO> productMono = fetchProduct(productId);
+                    return Mono.zip(roleMono, productMono)
+                            .map(tuple -> {
+                                RoleInfoDTO roleWithScopes = tuple.getT1();
+                                ProductInfoDTO productInfo = tuple.getT2();
+                                return contractInfo.toBuilder()
+                                        .contractNumber(fullContract.getContractNumber())
+                                        .contractStatus(fullContract.getContractStatus())
+                                        .startDate(fullContract.getStartDate())
+                                        .endDate(fullContract.getEndDate())
+                                        .roleInContract(roleWithScopes)
+                                        .product(productInfo)
+                                        .build();
+                            });
+                } else {
+                    // Only role, no product
+                    return roleMono.map(roleWithScopes ->
+                            contractInfo.toBuilder()
+                                    .contractNumber(fullContract.getContractNumber())
+                                    .contractStatus(fullContract.getContractStatus())
+                                    .startDate(fullContract.getStartDate())
+                                    .endDate(fullContract.getEndDate())
+                                    .roleInContract(roleWithScopes)
+                                    .product(null)
+                                    .build());
+                }
             });
     }
 
@@ -189,12 +196,10 @@ public class ContractResolverService {
     private Mono<RoleInfoDTO> fetchRole(UUID roleId) {
         return contractRoleApi.getContractRole(roleId)
                 .map(this::mapContractRoleDTOToRoleInfo)
-                .doOnSuccess(role -> 
+                .doOnSuccess(role ->
                     log.debug("Fetched role: {}", roleId))
-                .doOnError(error -> 
-                    log.error("Failed to fetch role: {}", roleId, error))
-                .onErrorResume(error -> 
-                    Mono.just(createFallbackRole(roleId)));
+                .doOnError(error ->
+                    log.error("Failed to fetch role: {}", roleId, error));
     }
 
     /**
@@ -204,9 +209,12 @@ public class ContractResolverService {
         return contractRoleScopeApi.getActiveScopesByRoleId(roleId)
                 .map(this::mapContractRoleScopeDTOToRoleScopeInfo)
                 .map(Collections::singletonList)
-                .doOnSuccess(scopes -> 
-                    log.debug("Fetched {} scopes for roleId: {}", scopes.size(), roleId))
-                .doOnError(error -> 
+                .doOnSuccess(scopes -> {
+                    if (scopes != null) {
+                        log.debug("Fetched {} scopes for roleId: {}", scopes.size(), roleId);
+                    }
+                })
+                .doOnError(error ->
                     log.error("Failed to fetch role scopes for roleId: {}", roleId, error))
                 .onErrorResume(error -> {
                     log.warn("No scopes found for roleId: {}", roleId);
@@ -220,12 +228,10 @@ public class ContractResolverService {
     private Mono<ProductInfoDTO> fetchProduct(UUID productId) {
         return productApi.getProduct(productId)
                 .map(this::mapProductDTOToProductInfo)
-                .doOnSuccess(product -> 
+                .doOnSuccess(product ->
                     log.debug("Fetched product: {}", productId))
-                .doOnError(error -> 
-                    log.error("Failed to fetch product: {}", productId, error))
-                .onErrorResume(error -> 
-                    Mono.just(createFallbackProduct(productId)));
+                .doOnError(error ->
+                    log.error("Failed to fetch product: {}", productId, error));
     }
 
     // ========== DTO Mapping Methods ==========
@@ -308,28 +314,8 @@ public class ContractResolverService {
                 .productId(productDTO.getProductId())
                 .productCode(productDTO.getProductCode())
                 .productName(productDTO.getProductName())
-                .productStatus(productDTO.getProductStatus() != null ? 
+                .productStatus(productDTO.getProductStatus() != null ?
                         productDTO.getProductStatus().getValue() : "UNKNOWN")
-                .build();
-    }
-
-    // ========== Fallback Methods ==========
-
-    private RoleInfoDTO createFallbackRole(UUID roleId) {
-        return RoleInfoDTO.builder()
-                .roleId(roleId)
-                .roleCode("UNKNOWN")
-                .name("Unknown Role")
-                .scopes(Collections.emptyList())
-                .isActive(false)
-                .build();
-    }
-
-    private ProductInfoDTO createFallbackProduct(UUID productId) {
-        return ProductInfoDTO.builder()
-                .productId(productId)
-                .productName("Unknown Product")
-                .productStatus("UNKNOWN")
                 .build();
     }
 }

@@ -16,33 +16,46 @@
 
 package com.firefly.security.center.core.services;
 
+import com.firefly.core.customer.sdk.api.EmailContactsApi;
 import com.firefly.core.customer.sdk.api.PartiesApi;
-import com.firefly.core.customer.sdk.model.FilterRequestPartyDTO;
-import com.firefly.core.customer.sdk.model.PaginationResponse;
+import com.firefly.core.customer.sdk.model.*;
 import com.firefly.idp.dtos.UserInfoResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
 /**
- * Default implementation of UserMappingService using SDK.
- * 
- * <p>This implementation queries the customer-mgmt service via PartiesApi SDK
- * to map IDP users to Firefly partyIds using filtering.
- * 
+ * Default implementation of UserMappingService using customer-mgmt SDK.
+ *
+ * <p>This implementation queries the customer-mgmt service to map IDP users
+ * to Firefly partyIds by searching through all parties and their email contacts.
+ *
  * <p><strong>Lookup Strategy:</strong></p>
  * <ol>
- *   <li>Try to find party by email from IDP user info</li>
- *   <li>If email lookup fails, try username lookup</li>
- *   <li>If both fail, generate a new UUID (this should trigger user creation)</li>
+ *   <li>Try to find party by email from IDP user info (searches all parties' email contacts)</li>
+ *   <li>If email lookup fails, try sourceSystem field lookup (for IDP username mapping)</li>
+ *   <li>If both fail, throw IllegalStateException - party MUST exist before authentication</li>
  * </ol>
- * 
- * <p>To override this behavior, provide your own {@code @Service} 
- * implementation of {@link UserMappingService}.
+ *
+ * <p><strong>Important:</strong> This implementation requires that parties exist in customer-mgmt
+ * before users can authenticate. If a party is not found, authentication will fail with an error.
+ *
+ * <p><strong>Performance Note:</strong> Email lookup searches through all parties which may be slow
+ * for large datasets. For production use, consider:
+ * <ul>
+ *   <li>Adding a dedicated email search endpoint in customer-mgmt</li>
+ *   <li>Storing IDP subject ID in party's sourceSystem field (format: "idp:username")</li>
+ *   <li>Implementing caching for email-to-partyId mappings</li>
+ *   <li>Providing your own optimized {@code @Service} implementation of {@link UserMappingService}</li>
+ * </ul>
+ *
+ * <p><strong>To auto-provision parties:</strong> Override this service with a custom implementation
+ * that creates parties in customer-mgmt when they don't exist.
  */
 @Service
 @ConditionalOnMissingBean(UserMappingService.class)
@@ -51,116 +64,154 @@ import java.util.UUID;
 public class DefaultUserMappingService implements UserMappingService {
 
     private final PartiesApi partiesApi;
+    private final EmailContactsApi emailContactsApi;
 
     @Override
     public Mono<UUID> mapToPartyId(UserInfoResponse userInfo, String username) {
-        log.debug("Mapping IDP user to partyId - email: {}, username: {}", 
+        log.debug("Mapping IDP user to partyId - email: {}, username: {}",
                 userInfo.getEmail(), username);
 
         // First, try to find party by email
         if (userInfo.getEmail() != null && !userInfo.getEmail().isBlank()) {
             return findPartyByEmail(userInfo.getEmail())
                     .onErrorResume(error -> {
-                        log.warn("Email lookup failed, trying username lookup: {}", error.getMessage());
-                        return findPartyByUsername(username != null ? username : userInfo.getPreferredUsername());
-                    })
-                    .onErrorResume(error -> {
-                        log.warn("Username lookup failed, using fallback: {}", error.getMessage());
-                        return fallbackMapping(userInfo, username);
+                        log.debug("Email lookup failed, trying username lookup: {}", error.getMessage());
+                        String usernameToUse = username != null ? username : userInfo.getPreferredUsername();
+                        if (usernameToUse != null) {
+                            return findPartyByUsername(usernameToUse);
+                        }
+                        return Mono.error(new IllegalStateException(
+                                "No party found for IDP user. Email: " + userInfo.getEmail() +
+                                ", Username: null. Party must exist in customer-mgmt before authentication."));
                     });
         }
 
         // If no email, try username
         if (username != null || userInfo.getPreferredUsername() != null) {
-            return findPartyByUsername(username != null ? username : userInfo.getPreferredUsername())
-                    .onErrorResume(error -> {
-                        log.warn("Username lookup failed, using fallback: {}", error.getMessage());
-                        return fallbackMapping(userInfo, username);
-                    });
+            return findPartyByUsername(username != null ? username : userInfo.getPreferredUsername());
         }
 
-        // Fallback
-        return fallbackMapping(userInfo, username);
+        // No email and no username - cannot map
+        return Mono.error(new IllegalStateException(
+                "Cannot map IDP user to partyId. No email or username provided. " +
+                "IDP user sub: " + userInfo.getSub()));
     }
 
     /**
-     * Find party by email address using SDK filtering.
-     * 
-     * <p>Note: This assumes the FilterRequestPartyDTO supports email-based filtering.
-     * If the actual SDK model structure is different, this will need to be adjusted.
+     * Find party by email address using SDK.
+     *
+     * <p>Strategy: Get all parties and check their email contacts.
+     * This is not optimal for large datasets but works for the general case.
+     *
+     * <p>For production optimization, consider:
+     * <ul>
+     *   <li>Adding a dedicated email search endpoint in customer-mgmt</li>
+     *   <li>Using a search service (Elasticsearch, etc.)</li>
+     *   <li>Caching email-to-partyId mappings</li>
+     * </ul>
      */
     private Mono<UUID> findPartyByEmail(String email) {
         log.debug("Looking up party by email using SDK: {}", email);
-        
-        // Create filter request - structure may need adjustment based on actual SDK model
+
+        // Create filter to get all parties (paginated)
         FilterRequestPartyDTO filter = new FilterRequestPartyDTO();
-        // Note: FilterRequestPartyDTO structure needs to be verified
-        // For now, using a simplified approach
-        
+        PaginationRequest pagination = new PaginationRequest();
+        pagination.setPageNumber(0);
+        pagination.setPageSize(100); // Process in batches of 100
+        filter.setPagination(pagination);
+
         return partiesApi.filterParties(filter, null)
-                .map(this::extractFirstPartyId)
-                .doOnSuccess(partyId -> log.info("Found party by email: {}", partyId))
-                .doOnError(error -> log.debug("Party not found by email: {}", email));
+                .expand(response -> {
+                    // If there are more pages, fetch them
+                    if (response.getCurrentPage() != null &&
+                        response.getCurrentPage() < response.getTotalPages() - 1) {
+                        PaginationRequest nextPage = new PaginationRequest();
+                        nextPage.setPageNumber(response.getCurrentPage() + 1);
+                        nextPage.setPageSize(100);
+                        FilterRequestPartyDTO nextFilter = new FilterRequestPartyDTO();
+                        nextFilter.setPagination(nextPage);
+                        return partiesApi.filterParties(nextFilter, null);
+                    }
+                    return Mono.empty();
+                })
+                .flatMap(response -> {
+                    // Check each party's email contacts
+                    if (response.getContent() == null || response.getContent().isEmpty()) {
+                        return Flux.empty();
+                    }
+
+                    return Flux.fromIterable(response.getContent())
+                            .cast(PartyDTO.class)
+                            .flatMap(party -> checkPartyEmail(party.getPartyId(), email)
+                                    .map(hasEmail -> hasEmail ? party.getPartyId() : null)
+                                    .onErrorReturn(null))
+                            .filter(partyId -> partyId != null);
+                })
+                .next() // Get the first match
+                .doOnSuccess(partyId -> {
+                    if (partyId != null) {
+                        log.info("Found party by email: {} -> {}", email, partyId);
+                    }
+                })
+                .switchIfEmpty(Mono.error(new IllegalStateException(
+                        "No party found with email: " + email +
+                        ". Party must exist in customer-mgmt before authentication.")));
     }
 
     /**
-     * Find party by username using SDK filtering.
+     * Check if a party has a specific email address
+     */
+    private Mono<Boolean> checkPartyEmail(UUID partyId, String email) {
+        FilterRequestEmailContactDTO filter = new FilterRequestEmailContactDTO();
+        EmailContactDTO emailFilter = new EmailContactDTO();
+        emailFilter.setEmail(email);
+        filter.setFilters(emailFilter);
+
+        return emailContactsApi.filterEmailContacts(partyId, filter, null)
+                .map(response -> response.getContent() != null && !response.getContent().isEmpty())
+                .onErrorReturn(false);
+    }
+
+    /**
+     * Find party by username using SDK filtering on sourceSystem field.
+     *
+     * <p>This assumes that parties have their IDP username stored in the sourceSystem field
+     * with a format like "idp:username".
+     *
+     * <p><strong>Important:</strong> Parties must be created with sourceSystem field set to
+     * "idp:username" for this lookup to work.
      */
     private Mono<UUID> findPartyByUsername(String username) {
         if (username == null) {
             return Mono.error(new IllegalArgumentException("Username is null"));
         }
-        
-        log.debug("Looking up party by username using SDK: {}", username);
-        
-        // Create filter request
-        FilterRequestPartyDTO filter = new FilterRequestPartyDTO();
-        
-        return partiesApi.filterParties(filter, null)
-                .map(this::extractFirstPartyId)
-                .doOnSuccess(partyId -> log.info("Found party by username: {}", partyId))
-                .doOnError(error -> log.debug("Party not found by username: {}", username));
-    }
-    
-    /**
-     * Extracts the first party ID from paginated SDK response.
-     */
-    private UUID extractFirstPartyId(PaginationResponse response) {
-        if (response.getContent() != null && !response.getContent().isEmpty()) {
-            Object firstItem = response.getContent().get(0);
-            if (firstItem instanceof com.firefly.core.customer.sdk.model.PartyDTO) {
-                return ((com.firefly.core.customer.sdk.model.PartyDTO) firstItem).getPartyId();
-            }
-        }
-        throw new IllegalStateException("No party found in response");
-    }
 
-    /**
-     * Fallback mapping when customer-mgmt lookups fail
-     * 
-     * In a real system, this might:
-     * - Create a new party in customer-mgmt
-     * - Return a default/guest partyId
-     * - Throw an exception requiring manual user registration
-     * 
-     * For now, we generate a UUID based on the IDP subject ID to ensure consistency
-     */
-    private Mono<UUID> fallbackMapping(UserInfoResponse userInfo, String username) {
-        log.warn("Using fallback mapping for user - sub: {}, email: {}, username: {}", 
-                userInfo.getSub(), userInfo.getEmail(), username);
-        
-        // Use sub (subject) from IDP to generate deterministic UUID
-        if (userInfo.getSub() != null) {
-            UUID partyId = UUID.nameUUIDFromBytes(
-                    ("idp-user-" + userInfo.getSub()).getBytes()
-            );
-            log.warn("Generated deterministic partyId from IDP sub: {}", partyId);
-            return Mono.just(partyId);
-        }
-        
-        // Last resort: random UUID
-        UUID partyId = UUID.randomUUID();
-        log.warn("Generated random partyId for unmapped user: {}", partyId);
-        return Mono.just(partyId);
+        log.debug("Looking up party by username using SDK: {}", username);
+
+        // Create filter to search by sourceSystem field
+        FilterRequestPartyDTO filter = new FilterRequestPartyDTO();
+        PartyDTO partyFilter = new PartyDTO();
+        partyFilter.setSourceSystem("idp:" + username);
+        filter.setFilters(partyFilter);
+
+        PaginationRequest pagination = new PaginationRequest();
+        pagination.setPageNumber(0);
+        pagination.setPageSize(10); // Should only find one
+        filter.setPagination(pagination);
+
+        return partiesApi.filterParties(filter, null)
+                .flatMap(response -> {
+                    if (response.getContent() != null && !response.getContent().isEmpty()) {
+                        Object firstItem = response.getContent().get(0);
+                        if (firstItem instanceof PartyDTO) {
+                            UUID partyId = ((PartyDTO) firstItem).getPartyId();
+                            log.info("Found party by username: {} -> {}", username, partyId);
+                            return Mono.just(partyId);
+                        }
+                    }
+                    return Mono.error(new IllegalStateException(
+                            "No party found with username: " + username +
+                            ". Party must exist in customer-mgmt with sourceSystem='idp:" + username + "' before authentication."));
+                });
     }
 }
