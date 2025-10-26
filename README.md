@@ -69,41 +69,41 @@ The Security Center is the **authentication and session orchestration hub** for 
        ▼
 ┌─────────────────────────────────────────────────────────┐
 │           Security Center (This Service)                │
-│                                                          │
-│  ┌────────────────────────────────────────────────┐    │
-│  │ 2. Authenticate with IDP                       │    │
-│  │    ├─→ Keycloak (OIDC/OAuth2)                 │    │
-│  │    └─→ AWS Cognito                             │    │
-│  └────────────────────────────────────────────────┘    │
-│                      ↓                                   │
-│  ┌────────────────────────────────────────────────┐    │
-│  │ 3. Extract partyId from token                  │    │
-│  └────────────────────────────────────────────────┘    │
-│                      ↓                                   │
-│  ┌────────────────────────────────────────────────┐    │
-│  │ 4. Enrich Session (Parallel Calls)             │    │
-│  │    ├─→ Customer Mgmt: Get customer profile     │    │
-│  │    └─→ Contract Mgmt: Get active contracts     │    │
-│  │         └─→ For each contract:                 │    │
-│  │             ├─→ Get contract details           │    │
-│  │             ├─→ Get role & permissions         │    │
-│  │             └─→ Get product info               │    │
-│  └────────────────────────────────────────────────┘    │
-│                      ↓                                   │
-│  ┌────────────────────────────────────────────────┐    │
-│  │ 5. Create SessionContext                       │    │
-│  │    - Customer info                             │    │
-│  │    - Active contracts                          │    │
-│  │    - Products                                  │    │
-│  │    - Roles & permissions                       │    │
-│  │    - IDP tokens                                │    │
-│  └────────────────────────────────────────────────┘    │
-│                      ↓                                   │
-│  ┌────────────────────────────────────────────────┐    │
-│  │ 6. Cache in Redis/Caffeine                     │    │
-│  │    Key: firefly:session:{sessionId}            │    │
-│  │    TTL: 30 minutes                             │    │
-│  └────────────────────────────────────────────────┘    │
+│                                                         │
+│  ┌────────────────────────────────────────────────┐     │
+│  │ 2. Authenticate with IDP                       │     │
+│  │    ├─→ Keycloak (OIDC/OAuth2)                  │     │
+│  │    └─→ AWS Cognito                             │     │
+│  └────────────────────────────────────────────────┘     │
+│                      ↓                                  │
+│  ┌────────────────────────────────────────────────┐     │
+│  │ 3. Extract partyId from token                  │     │
+│  └────────────────────────────────────────────────┘     │
+│                      ↓                                  │
+│  ┌────────────────────────────────────────────────┐     │
+│  │ 4. Enrich Session (Parallel Calls)             │     │
+│  │    ├─→ Customer Mgmt: Get customer profile     │     │
+│  │    └─→ Contract Mgmt: Get active contracts     │     │
+│  │         └─→ For each contract:                 │     │
+│  │             ├─→ Get contract details           │     │
+│  │             ├─→ Get role & permissions         │     │
+│  │             └─→ Get product info               │     │
+│  └────────────────────────────────────────────────┘     │
+│                      ↓                                  │
+│  ┌────────────────────────────────────────────────┐     │
+│  │ 5. Create SessionContext                       │     │
+│  │    - Customer info                             │     │
+│  │    - Active contracts                          │     │
+│  │    - Products                                  │     │
+│  │    - Roles & permissions                       │     │
+│  │    - IDP tokens                                │     │
+│  └────────────────────────────────────────────────┘     │
+│                      ↓                                  │
+│  ┌────────────────────────────────────────────────┐     │
+│  │ 6. Cache in Redis/Caffeine                     │     │
+│  │    Key: firefly:session:{sessionId}            │     │
+│  │    TTL: 30 minutes                             │     │
+│  └────────────────────────────────────────────────┘     │
 └─────────────────────────────────────────────────────────┘
        │
        │ 7. Return enriched session
