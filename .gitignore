@@ -29,10 +29,6 @@ replay_pid*
 *.ipr
 *.iws
 
-# Target folder
-/target/
-
-# Additional Maven patterns added Fri Aug 29 20:27:13 CEST 2025
-**/target/generated-sources/
-**/target/generated-test-sources/
-**/target/generated-resources/
+# Maven build directories
+target/
+**/target/
