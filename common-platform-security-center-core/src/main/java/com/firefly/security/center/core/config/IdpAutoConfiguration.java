@@ -56,7 +56,6 @@ import org.springframework.context.annotation.Import;
  * </ul>
  */
 @Configuration
-@EnableConfigurationProperties(IdpConfigurationProperties.class)
 @Slf4j
 public class IdpAutoConfiguration {
 
@@ -64,7 +63,7 @@ public class IdpAutoConfiguration {
      * Enable Keycloak IDP adapter when on classpath and provider=keycloak
      */
     @Configuration
-    @ConditionalOnClass(name = "com.firefly.idp.adapter.impl.IdpAdapterImpl")
+    @ConditionalOnClass(name = {"com.firefly.idp.adapter.impl.IdpAdapterImpl", "com.firefly.idp.properties.KeycloakProperties"})
     @ConditionalOnProperty(prefix = "firefly.security-center.idp", name = "provider", havingValue = "keycloak")
     @ComponentScan(basePackages = {"com.firefly.idp.adapter", "com.firefly.idp.properties", "com.firefly.idp.config"})
     static class KeycloakIdpConfiguration {
@@ -92,17 +91,14 @@ public class IdpAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(IdpAdapter.class)
-    @ConditionalOnProperty(prefix = "firefly.security-center.idp", name = "provider")
-    public IdpAdapter fallbackIdpAdapter(IdpConfigurationProperties properties) {
-        String provider = properties.getProvider();
-        log.error("No IdpAdapter bean found for provider: {}. " +
+    public IdpAdapter fallbackIdpAdapter() {
+        log.error("No IdpAdapter bean found. " +
                 "Please ensure the corresponding IDP implementation library is on the classpath " +
-                "(e.g., lib-idp-keycloak-impl for Keycloak, lib-idp-aws-cognito-impl for Cognito).", 
-                provider);
+                "(e.g., lib-idp-keycloak-impl for Keycloak, lib-idp-aws-cognito-impl for Cognito).");
         
         throw new IllegalStateException(
-                String.format("IDP adapter not configured for provider '%s'. " +
+                "IDP adapter not configured. " +
                         "Add the appropriate dependency (lib-idp-keycloak-impl or lib-idp-aws-cognito-impl) " +
-                        "to your project.", provider));
+                        "to your project.");
     }
 }
