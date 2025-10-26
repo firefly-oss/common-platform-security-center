@@ -1,0 +1,10 @@
+/Users/ancongui/Development/firefly/common-platform-security-center/common-platform-security-center-core/src/main/java/com/firefly/security/center/core/config/WebClientConfiguration.java
+/Users/ancongui/Development/firefly/common-platform-security-center/common-platform-security-center-core/src/main/java/com/firefly/security/center/core/impl/FireflySessionManagerImpl.java
+/Users/ancongui/Development/firefly/common-platform-security-center/common-platform-security-center-core/src/main/java/com/firefly/security/center/core/services/ContractResolverService.java
+/Users/ancongui/Development/firefly/common-platform-security-center/common-platform-security-center-core/src/main/java/com/firefly/security/center/core/services/DefaultUserMappingService.java
+/Users/ancongui/Development/firefly/common-platform-security-center/common-platform-security-center-core/src/main/java/com/firefly/security/center/core/services/AuthenticationService.java
+/Users/ancongui/Development/firefly/common-platform-security-center/common-platform-security-center-core/src/main/java/com/firefly/security/center/core/services/SessionAggregationService.java
+/Users/ancongui/Development/firefly/common-platform-security-center/common-platform-security-center-core/src/main/java/com/firefly/security/center/core/services/CustomerResolverService.java
+/Users/ancongui/Development/firefly/common-platform-security-center/common-platform-security-center-core/src/main/java/com/firefly/security/center/core/config/IdpAutoConfiguration.java
+/Users/ancongui/Development/firefly/common-platform-security-center/common-platform-security-center-core/src/main/java/com/firefly/security/center/core/config/IdpConfigurationProperties.java
+/Users/ancongui/Development/firefly/common-platform-security-center/common-platform-security-center-core/src/main/java/com/firefly/security/center/core/services/UserMappingService.java

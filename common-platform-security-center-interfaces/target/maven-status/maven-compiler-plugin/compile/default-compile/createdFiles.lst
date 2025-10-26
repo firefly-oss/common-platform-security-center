@@ -1,0 +1,15 @@
+com/firefly/security/center/interfaces/dtos/RoleInfoDTO$RoleInfoDTOBuilder.class
+com/firefly/security/center/interfaces/dtos/SessionMetadataDTO.class
+com/firefly/security/center/interfaces/dtos/CustomerInfoDTO.class
+com/firefly/security/center/interfaces/dtos/CustomerInfoDTO$CustomerInfoDTOBuilder.class
+com/firefly/security/center/interfaces/dtos/RoleScopeInfoDTO.class
+com/firefly/security/center/interfaces/dtos/ProductInfoDTO$ProductInfoDTOBuilder.class
+com/firefly/security/center/interfaces/dtos/ContractInfoDTO.class
+com/firefly/security/center/interfaces/dtos/SessionContextDTO.class
+com/firefly/security/center/interfaces/dtos/ProductInfoDTO.class
+com/firefly/security/center/interfaces/dtos/SessionContextDTO$SessionStatus.class
+com/firefly/security/center/interfaces/dtos/RoleInfoDTO.class
+com/firefly/security/center/interfaces/dtos/RoleScopeInfoDTO$RoleScopeInfoDTOBuilder.class
+com/firefly/security/center/interfaces/dtos/SessionMetadataDTO$SessionMetadataDTOBuilder.class
+com/firefly/security/center/interfaces/dtos/ContractInfoDTO$ContractInfoDTOBuilder.class
+com/firefly/security/center/interfaces/dtos/SessionContextDTO$SessionContextDTOBuilder.class
