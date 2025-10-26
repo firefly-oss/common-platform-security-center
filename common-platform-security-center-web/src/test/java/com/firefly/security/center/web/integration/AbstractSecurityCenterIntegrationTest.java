@@ -26,12 +26,24 @@ import com.firefly.core.contract.sdk.api.GlobalContractPartiesApi;
 import com.firefly.common.product.sdk.api.ProductApi;
 import com.firefly.common.reference.master.data.sdk.api.ContractRoleApi;
 import com.firefly.common.reference.master.data.sdk.api.ContractRoleScopeApi;
+import com.firefly.core.customer.sdk.model.*;
+import com.firefly.security.center.web.config.SecurityCenterTestConfiguration;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import reactor.core.publisher.Mono;
+
+import java.util.Collections;
+import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 /**
  * Abstract base class for Security Center integration tests.
@@ -57,6 +69,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 @Tag("integration")
+@Import(SecurityCenterTestConfiguration.class)
 public abstract class AbstractSecurityCenterIntegrationTest {
 
     // Mock Customer Management SDK APIs
@@ -89,14 +102,18 @@ public abstract class AbstractSecurityCenterIntegrationTest {
     // Mock Reference Master Data SDK APIs
     @MockBean
     protected ContractRoleApi contractRoleApi;
-    
+
     @MockBean
     protected ContractRoleScopeApi contractRoleScopeApi;
+
+    protected UUID testPartyId;
+
+
 
     /**
      * Configure dynamic properties for integration tests.
      * Subclasses can override to add IDP-specific or cache-specific properties.
-     * 
+     *
      * @param registry Dynamic property registry
      */
     @DynamicPropertySource
@@ -106,11 +123,11 @@ public abstract class AbstractSecurityCenterIntegrationTest {
         registry.add("logging.level.com.firefly.security.center", () -> "DEBUG");
         registry.add("logging.level.org.testcontainers", () -> "INFO");
         registry.add("logging.level.com.github.dockerjava", () -> "WARN");
-        
+
         // Session configuration
         registry.add("firefly.security-center.session.timeout-minutes", () -> "30");
         registry.add("firefly.security-center.session.cleanup-interval-minutes", () -> "15");
-        
+
         // SDK Client base URLs (mocked - not actually called in tests)
         registry.add("firefly.clients.contract-mgmt.base-url", () -> "http://localhost:8081");
         registry.add("firefly.clients.customer-mgmt.base-url", () -> "http://localhost:8082");

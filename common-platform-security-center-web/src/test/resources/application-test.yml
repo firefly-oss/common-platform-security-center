@@ -2,6 +2,15 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
+management:
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  health:
+    defaults:
+      enabled: true
+
 firefly:
   security-center:
     idp:
@@ -11,7 +20,7 @@ firefly:
         realm: firefly
         client-id: test-client
         client-secret: test-secret
-    
+
     clients:
       customer-mgmt:
         base-url: http://localhost:8081

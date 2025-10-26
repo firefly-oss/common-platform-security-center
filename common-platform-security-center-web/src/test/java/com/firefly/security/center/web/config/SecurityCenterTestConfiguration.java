@@ -26,12 +26,12 @@ import org.springframework.context.annotation.Primary;
 
 /**
  * Test configuration for Security Center integration tests.
- * 
+ *
  * <p>This configuration ensures that {@link DefaultUserMappingService} is created
  * in the test context using the mocked SDK APIs.
  */
 @TestConfiguration
-public class TestConfiguration {
+public class SecurityCenterTestConfiguration {
 
     /**
      * Create DefaultUserMappingService bean for tests.

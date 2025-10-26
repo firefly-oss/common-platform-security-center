@@ -107,6 +107,10 @@ management:
   endpoint:
     health:
       show-details: always
+      show-components: always
+  health:
+    defaults:
+      enabled: true
   metrics:
     export:
       prometheus:

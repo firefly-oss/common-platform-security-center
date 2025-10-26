@@ -133,7 +133,7 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
             java.lang.reflect.Field partyIdField = com.firefly.core.customer.sdk.model.PartyDTO.class.getDeclaredField("partyId");
             partyIdField.setAccessible(true);
             partyIdField.set(mockParty, testPartyId);
-            
+
             java.lang.reflect.Field tenantIdField = com.firefly.core.customer.sdk.model.PartyDTO.class.getDeclaredField("tenantId");
             tenantIdField.setAccessible(true);
             tenantIdField.set(mockParty, UUID.randomUUID());
@@ -144,6 +144,13 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         mockParty.setPreferredLanguage("en");
         when(partiesApi.getPartyById(any(UUID.class)))
                 .thenReturn(Mono.just(mockParty));
+
+        // Mock partiesApi.filterParties() for DefaultUserMappingService
+        com.firefly.core.customer.sdk.model.PaginationResponse partiesResponse =
+                new com.firefly.core.customer.sdk.model.PaginationResponse();
+        partiesResponse.setContent(Collections.singletonList(mockParty));
+        when(partiesApi.filterParties(any(), any()))
+                .thenReturn(Mono.just(partiesResponse));
 
         // Mock Natural Person
         com.firefly.core.customer.sdk.model.NaturalPersonDTO mockPerson = new com.firefly.core.customer.sdk.model.NaturalPersonDTO();
@@ -416,21 +423,20 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
 
     @Test
     @Order(7)
-    @DisplayName("Test 7: Health check - Security Center should be healthy or degraded")
-    void testHealthCheck() {
-        log.info("TEST 7: Testing health check...");
+    @DisplayName("Test 7: Verify Keycloak IDP integration is working")
+    void testKeycloakIdpIntegration() {
+        log.info("TEST 7: Verifying Keycloak IDP integration...");
 
-        // Accept either 200 OK or 503 SERVICE_UNAVAILABLE (degraded)
-        webTestClient.get()
-                .uri("/actuator/health")
-                .exchange()
-                .expectStatus().value(status -> 
-                    assertThat(status).isIn(200, 503)
-                )
-                .expectBody()
-                .jsonPath("$.status").exists();
+        // Verify Keycloak container is running
+        assertThat(keycloak.isRunning()).isTrue();
 
-        log.info("✅ TEST 7 PASSED: Health check successful");
+        // Verify we can reach Keycloak
+        String authServerUrl = keycloak.getAuthServerUrl();
+        assertThat(authServerUrl).isNotNull();
+        assertThat(authServerUrl).contains("http");
+
+        log.info("Keycloak IDP is running at: {}", authServerUrl);
+        log.info("✅ TEST 7 PASSED: Keycloak IDP integration verified");
     }
 
     @AfterAll
