@@ -186,24 +186,21 @@ class CustomerResolverServiceTest {
     }
 
     @Test
-    void resolveCustomerInfo_naturalPersonFetchFails_usesFallback() {
+    void resolveCustomerInfo_naturalPersonFetchFails_propagatesError() {
         // Given
         PartyDTO party = createPartyDTO(PartyDTO.PartyKindEnum.INDIVIDUAL);
 
         when(partiesApi.getPartyById(testPartyId)).thenReturn(Mono.just(party));
         when(naturalPersonsApi.getNaturalPersonByPartyId(testPartyId))
                 .thenReturn(Mono.error(new RuntimeException("Natural person not found")));
-        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any(), isNull()))
-                .thenReturn(Mono.just(createEmailResponse(null)));
-        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any(), isNull()))
-                .thenReturn(Mono.just(createPhoneResponse(null)));
+        // No need to mock email/phone contacts - error happens before they're called
 
-        // When & Then
+        // When & Then - Error should propagate, no fallback
         StepVerifier.create(customerResolverService.resolveCustomerInfo(testPartyId))
-                .assertNext(customer -> {
-                    assertThat(customer.getFullName()).isEqualTo("Unknown Person");
-                })
-                .verifyComplete();
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException &&
+                    throwable.getMessage().equals("Natural person not found"))
+                .verify();
     }
 
     @Test
@@ -230,44 +227,37 @@ class CustomerResolverServiceTest {
     }
 
     @Test
-    void resolveCustomerInfo_partyNotFound_usesFallback() {
+    void resolveCustomerInfo_partyNotFound_propagatesError() {
         // Given
         when(partiesApi.getPartyById(testPartyId))
                 .thenReturn(Mono.error(new RuntimeException("Party not found")));
 
-        // When & Then
+        // When & Then - Error should propagate, no fallback
         StepVerifier.create(customerResolverService.resolveCustomerInfo(testPartyId))
-                .assertNext(customer -> {
-                    assertThat(customer.getPartyId()).isEqualTo(testPartyId);
-                    assertThat(customer.getPartyKind()).isEqualTo("UNKNOWN");
-                    assertThat(customer.getFullName()).isEqualTo("Unknown Customer");
-                    assertThat(customer.getIsActive()).isFalse();
-                })
-                .verifyComplete();
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException &&
+                    throwable.getMessage().equals("Party not found"))
+                .verify();
 
         verify(partiesApi).getPartyById(testPartyId);
         verifyNoInteractions(naturalPersonsApi, legalEntitiesApi, emailContactsApi, phoneContactsApi);
     }
 
     @Test
-    void resolveCustomerInfo_unknownPartyKind_usesPlaceholder() {
+    void resolveCustomerInfo_unknownPartyKind_propagatesError() {
         // Given
         PartyDTO party = createPartyDTO(null);
         party.setPartyKind(null);
 
         when(partiesApi.getPartyById(testPartyId)).thenReturn(Mono.just(party));
-        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any(), isNull()))
-                .thenReturn(Mono.just(createEmailResponse(null)));
-        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any(), isNull()))
-                .thenReturn(Mono.just(createPhoneResponse(null)));
+        // No need to mock email/phone contacts - error happens before they're called
 
-        // When & Then
+        // When & Then - Error should propagate for unknown party kind
         StepVerifier.create(customerResolverService.resolveCustomerInfo(testPartyId))
-                .assertNext(customer -> {
-                    assertThat(customer.getPartyKind()).isEqualTo("UNKNOWN");
-                    assertThat(customer.getFullName()).startsWith("Party-");
-                })
-                .verifyComplete();
+                .expectErrorMatches(throwable ->
+                    throwable instanceof IllegalArgumentException &&
+                    throwable.getMessage().contains("Unknown party kind"))
+                .verify();
     }
 
     @Test

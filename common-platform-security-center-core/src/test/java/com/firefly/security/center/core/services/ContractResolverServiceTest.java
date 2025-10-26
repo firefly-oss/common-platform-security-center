@@ -199,7 +199,7 @@ class ContractResolverServiceTest {
     }
 
     @Test
-    void resolveActiveContracts_contractEnrichmentFails_returnsPartialData() {
+    void resolveActiveContracts_contractEnrichmentFails_propagatesError() {
         // Given
         ContractPartyDTO contractParty = createContractPartyDTO();
         PaginationResponse response = createPaginationResponse(List.of(contractParty));
@@ -209,18 +209,16 @@ class ContractResolverServiceTest {
         when(contractsApi.getContractById(testContractId))
                 .thenReturn(Mono.error(new RuntimeException("Contract not found")));
 
-        // When & Then
+        // When & Then - Error should propagate, no partial data
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
-                .assertNext(contracts -> {
-                    assertThat(contracts).hasSize(1);
-                    // Should return partial data (just IDs)
-                    assertThat(contracts.get(0).getContractId()).isEqualTo(testContractId);
-                })
-                .verifyComplete();
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException &&
+                    throwable.getMessage().equals("Contract not found"))
+                .verify();
     }
 
     @Test
-    void resolveActiveContracts_roleEnrichmentFails_usesFallback() {
+    void resolveActiveContracts_roleEnrichmentFails_propagatesError() {
         // Given
         ContractPartyDTO contractParty = createContractPartyDTO();
         PaginationResponse response = createPaginationResponse(List.of(contractParty));
@@ -236,21 +234,16 @@ class ContractResolverServiceTest {
                 .thenReturn(Mono.error(new RuntimeException("Scopes not found")));
         when(productApi.getProduct(testProductId)).thenReturn(Mono.just(product));
 
-        // When & Then
+        // When & Then - Error should propagate, no fallback
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
-                .assertNext(contracts -> {
-                    assertThat(contracts).hasSize(1);
-                    ContractInfoDTO contractInfo = contracts.get(0);
-                    
-                    assertThat(contractInfo.getRoleInContract()).isNotNull();
-                    assertThat(contractInfo.getRoleInContract().getRoleCode()).isEqualTo("UNKNOWN");
-                    assertThat(contractInfo.getRoleInContract().getName()).isEqualTo("Unknown Role");
-                })
-                .verifyComplete();
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException &&
+                    throwable.getMessage().equals("Role not found"))
+                .verify();
     }
 
     @Test
-    void resolveActiveContracts_productFetchFails_usesFallback() {
+    void resolveActiveContracts_productFetchFails_propagatesError() {
         // Given
         ContractPartyDTO contractParty = createContractPartyDTO();
         PaginationResponse response = createPaginationResponse(List.of(contractParty));
@@ -266,17 +259,12 @@ class ContractResolverServiceTest {
         when(productApi.getProduct(testProductId))
                 .thenReturn(Mono.error(new RuntimeException("Product not found")));
 
-        // When & Then
+        // When & Then - Error should propagate, no fallback
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
-                .assertNext(contracts -> {
-                    assertThat(contracts).hasSize(1);
-                    ContractInfoDTO contractInfo = contracts.get(0);
-                    
-                    assertThat(contractInfo.getProduct()).isNotNull();
-                    assertThat(contractInfo.getProduct().getProductName()).isEqualTo("Unknown Product");
-                    assertThat(contractInfo.getProduct().getProductStatus()).isEqualTo("UNKNOWN");
-                })
-                .verifyComplete();
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException &&
+                    throwable.getMessage().equals("Product not found"))
+                .verify();
     }
 
     @Test
