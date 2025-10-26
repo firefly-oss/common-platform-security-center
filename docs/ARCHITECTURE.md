@@ -150,32 +150,66 @@ The `IdpAutoConfiguration` class conditionally loads the correct adapter bean ba
 
 ```
 SessionContext
-├── sessionId: UUID
+├── sessionId: String
 ├── partyId: UUID
-├── accessToken: String
-├── refreshToken: String
-├── idToken: String
-├── expiresAt: Instant
-├── customer: CustomerInfo
-│   ├── partyId
-│   ├── firstName
-│   ├── lastName
-│   └── email
-└── activeContracts: List<ContractInfo>
-    └── ContractInfo
-        ├── contractId: UUID
-        ├── contractNumber: String
-        ├── status: String
-        ├── product: ProductInfo
-        │   ├── productId
-        │   ├── productName
-        │   └── productType
-        └── roleInContract: RoleInfo
-            ├── roleId
-            ├── roleName
-            └── scopes: List<RoleScope>
-                ├── actionType (READ, WRITE, DELETE)
-                └── resourceType (BALANCE, TRANSACTION, etc.)
+├── customerInfo: CustomerInfo
+│   ├── partyId: UUID
+│   ├── partyKind: String (NATURAL_PERSON or LEGAL_ENTITY)
+│   ├── tenantId: UUID
+│   ├── fullName: String
+│   ├── preferredLanguage: String
+│   ├── email: String
+│   ├── phoneNumber: String
+│   ├── taxIdNumber: String
+│   └── isActive: Boolean
+├── activeContracts: List<ContractInfo>
+│   └── ContractInfo
+│       ├── contractId: UUID
+│       ├── contractNumber: String
+│       ├── contractStatus: String
+│       ├── startDate: LocalDateTime
+│       ├── endDate: LocalDateTime
+│       ├── contractPartyId: UUID
+│       ├── product: ProductInfo
+│       │   ├── productId: UUID
+│       │   ├── productName: String
+│       │   ├── productType: String
+│       │   ├── description: String
+│       │   └── isActive: Boolean
+│       ├── roleInContract: RoleInfo
+│       │   ├── roleId: UUID
+│       │   ├── roleCode: String
+│       │   ├── name: String
+│       │   ├── description: String
+│       │   ├── isActive: Boolean
+│       │   ├── scopes: List<RoleScopeInfo>
+│       │   │   └── RoleScopeInfo
+│       │   │       ├── scopeId: UUID
+│       │   │       ├── roleId: UUID
+│       │   │       ├── scopeCode: String
+│       │   │       ├── scopeName: String
+│       │   │       ├── description: String
+│       │   │       ├── actionType: String (READ, WRITE, DELETE, EXECUTE, APPROVE)
+│       │   │       ├── resourceType: String (PRODUCT, TRANSACTION, ACCOUNT, BALANCE)
+│       │   │       └── isActive: Boolean
+│       │   ├── dateCreated: LocalDateTime
+│       │   └── dateUpdated: LocalDateTime
+│       ├── dateJoined: LocalDateTime
+│       ├── dateLeft: LocalDateTime
+│       ├── isActive: Boolean
+│       ├── createdAt: LocalDateTime
+│       └── updatedAt: LocalDateTime
+├── createdAt: LocalDateTime
+├── lastAccessedAt: LocalDateTime
+├── expiresAt: LocalDateTime
+├── ipAddress: String
+├── userAgent: String
+├── status: SessionStatus (ACTIVE, EXPIRED, INVALIDATED, LOCKED)
+└── metadata: SessionMetadata
+    ├── channel: String (web, mobile, api)
+    ├── sourceApplication: String
+    ├── deviceInfo: String
+    └── geolocation: String
 ```
 
 ## Cache Architecture

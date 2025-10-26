@@ -9,12 +9,13 @@ firefly:
   security-center:
     idp:
       provider: keycloak
-
-keycloak:
-  server-url: http://localhost:8080
-  realm: your-realm
-  client-id: your-client
-  client-secret: your-secret
+      keycloak:
+        server-url: http://localhost:8080
+        realm: your-realm
+        client-id: your-client
+        client-secret: your-secret
+        admin-username: admin
+        admin-password: admin
 ```
 
 ### Minimum Configuration for AWS Cognito
@@ -40,13 +41,14 @@ Full Keycloak configuration with all available properties:
 firefly:
   security-center:
     idp:
-      provider: keycloak
-
-keycloak:
-  server-url: http://localhost:8080              # Required
-  realm: your-realm                               # Required
-  client-id: your-client                          # Required
-  client-secret: your-secret                      # Required for confidential clients
+      provider: keycloak                          # Options: keycloak, cognito
+      keycloak:
+        server-url: http://localhost:8080         # Required
+        realm: your-realm                         # Required
+        client-id: your-client                    # Required
+        client-secret: your-secret                # Required for confidential clients
+        admin-username: admin                     # Required for admin operations
+        admin-password: admin                     # Required for admin operations
   connection-pool-size: 10                        # Optional, default: 10
   connection-timeout: 30000                       # Optional, default: 30000ms
   request-timeout: 60000                          # Optional, default: 60000ms
@@ -238,11 +240,16 @@ firefly:
   cache:
     default-cache-type: CAFFEINE
 
-keycloak:
-  server-url: http://localhost:8080
-  realm: firefly-dev
-  client-id: security-center-dev
-  client-secret: dev-secret
+  security-center:
+    idp:
+      provider: keycloak
+      keycloak:
+        server-url: http://localhost:8080
+        realm: firefly-dev
+        client-id: security-center-dev
+        client-secret: dev-secret
+        admin-username: admin
+        admin-password: admin
 
 logging:
   level:

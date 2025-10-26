@@ -1,9 +1,20 @@
 # Security Center - API Documentation
 
-## Base URL
+## Base URLs
 
+**Security Center:**
 ```
-http://localhost:8080/api/v1/auth
+http://localhost:8085
+```
+
+**Authentication Endpoints:**
+```
+http://localhost:8085/api/v1/auth
+```
+
+**Session Management Endpoints:**
+```
+http://localhost:8085/api/v1/sessions
 ```
 
 ## Authentication Endpoints
@@ -56,7 +67,7 @@ Authenticate a user and create a new session.
 
 **cURL Example:**
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/login \
+curl -X POST http://localhost:8085/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "user@example.com",
@@ -103,7 +114,7 @@ Refresh an access token using a refresh token.
 
 **cURL Example:**
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/refresh \
+curl -X POST http://localhost:8085/api/v1/auth/refresh \
   -H "Content-Type: application/json" \
   -d '{
     "refreshToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -146,7 +157,7 @@ Logout a user and invalidate their session.
 
 **cURL Example:**
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/logout \
+curl -X POST http://localhost:8085/api/v1/auth/logout \
   -H "Content-Type: application/json" \
   -d '{
     "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -157,11 +168,13 @@ curl -X POST http://localhost:8080/api/v1/auth/logout \
 
 ---
 
-### 4. Get Session
+## Session Management Endpoints
+
+### 1. Get Session by ID
 
 Retrieve session details by session ID.
 
-**Endpoint:** `GET /session/{sessionId}`
+**Endpoint:** `GET /api/v1/sessions/{sessionId}`
 
 **Headers:**
 ```
@@ -232,7 +245,7 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
 
 **cURL Example:**
 ```bash
-curl -X GET http://localhost:8080/api/v1/auth/session/550e8400-e29b-41d4-a716-446655440000 \
+curl -X GET http://localhost:8085/api/v1/sessions/550e8400-e29b-41d4-a716-446655440000 \
   -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
@@ -293,7 +306,7 @@ Check the health status of the Security Center service.
 
 **cURL Example:**
 ```bash
-curl -X GET http://localhost:8080/actuator/health
+curl -X GET http://localhost:8085/actuator/health
 ```
 
 ---
@@ -360,44 +373,80 @@ interface LogoutRequest {
 interface SessionContext {
   sessionId: string;
   partyId: string;
-  accessToken: string;
-  refreshToken: string;
-  idToken: string;
-  expiresAt: string;      // ISO 8601 timestamp
-  customer: CustomerInfo;
+  customerInfo: CustomerInfo;        // Note: "customerInfo" not "customer"
   activeContracts: ContractInfo[];
+  createdAt: string;                 // ISO 8601 timestamp
+  lastAccessedAt: string;            // ISO 8601 timestamp
+  expiresAt: string;                 // ISO 8601 timestamp
+  ipAddress: string;
+  userAgent: string;
+  status: "ACTIVE" | "EXPIRED" | "INVALIDATED" | "LOCKED";
+  metadata: SessionMetadata;
 }
 
 interface CustomerInfo {
   partyId: string;
-  firstName: string;
-  lastName: string;
+  partyKind: string;                 // NATURAL_PERSON or LEGAL_ENTITY
+  tenantId: string;
+  fullName: string;
+  preferredLanguage: string;
   email: string;
+  phoneNumber: string;
+  taxIdNumber: string;
+  isActive: boolean;
 }
 
 interface ContractInfo {
   contractId: string;
   contractNumber: string;
-  status: string;
-  product: ProductInfo;
+  contractStatus: string;            // Note: "contractStatus" not "status"
+  startDate: string;                 // ISO 8601 timestamp
+  endDate: string;                   // ISO 8601 timestamp
+  contractPartyId: string;
   roleInContract: RoleInfo;
+  product: ProductInfo;
+  dateJoined: string;                // ISO 8601 timestamp
+  dateLeft: string;                  // ISO 8601 timestamp
+  isActive: boolean;
+  createdAt: string;                 // ISO 8601 timestamp
+  updatedAt: string;                 // ISO 8601 timestamp
 }
 
 interface ProductInfo {
   productId: string;
   productName: string;
   productType: string;
+  description: string;
+  isActive: boolean;
 }
 
 interface RoleInfo {
   roleId: string;
-  roleName: string;
-  scopes: RoleScope[];
+  roleCode: string;
+  name: string;                      // Note: "name" not "roleName"
+  description: string;
+  isActive: boolean;
+  scopes: RoleScopeInfo[];           // Note: RoleScopeInfo not RoleScope
+  dateCreated: string;               // ISO 8601 timestamp
+  dateUpdated: string;               // ISO 8601 timestamp
 }
 
-interface RoleScope {
-  actionType: string;     // READ, WRITE, DELETE, etc.
-  resourceType: string;   // BALANCE, TRANSACTION, etc.
+interface RoleScopeInfo {
+  scopeId: string;
+  roleId: string;
+  scopeCode: string;
+  scopeName: string;
+  description: string;
+  actionType: string;                // READ, WRITE, DELETE, EXECUTE, APPROVE
+  resourceType: string;              // PRODUCT, TRANSACTION, ACCOUNT, BALANCE
+  isActive: boolean;
+}
+
+interface SessionMetadata {
+  channel: string;                   // web, mobile, api
+  sourceApplication: string;
+  deviceInfo: string;
+  geolocation: string;
 }
 ```
 
