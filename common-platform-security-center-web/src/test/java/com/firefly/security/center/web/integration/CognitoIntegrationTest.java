@@ -40,6 +40,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
@@ -272,7 +273,7 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
                 new com.firefly.core.contract.sdk.model.PaginationResponse();
         contractPartiesResponse.setContent(Collections.singletonList(mockContractParty));
         contractPartiesResponse.setTotalElements(1L);
-        when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class)))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class), anyString()))
                 .thenReturn(Mono.just(contractPartiesResponse));
 
         // Mock Contract Details
@@ -287,7 +288,7 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set contract ID", e);
         }
-        when(contractsApi.getContractById(any(UUID.class)))
+        when(contractsApi.getContractById(any(UUID.class), anyString()))
                 .thenReturn(Mono.just(mockContract));
 
         // Mock Product Management SDK

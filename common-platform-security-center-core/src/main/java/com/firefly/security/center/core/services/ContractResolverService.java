@@ -90,7 +90,7 @@ public class ContractResolverService {
     private Flux<ContractInfoDTO> fetchContractPartiesForParty(UUID partyId) {
         log.debug("Fetching contract parties for partyId: {}", partyId);
         
-        return globalContractPartiesApi.getContractPartiesByPartyId(partyId, true)
+        return globalContractPartiesApi.getContractPartiesByPartyId(partyId, true, UUID.randomUUID().toString())
                 .flatMapMany(response -> Flux.fromIterable(response.getContent()))
                 .map(contractParty -> (ContractPartyDTO) contractParty)
                 .map(this::mapContractPartyDTOToContractInfo)
@@ -182,7 +182,7 @@ public class ContractResolverService {
      * Fetches full contract details from contract-mgmt using SDK.
      */
     private Mono<ContractInfoDTO> fetchContract(UUID contractId) {
-        return contractsApi.getContractById(contractId)
+        return contractsApi.getContractById(contractId, UUID.randomUUID().toString())
                 .map(this::mapContractDTOToContractInfo)
                 .doOnSuccess(contract -> 
                     log.debug("Fetched contract: {}", contractId))

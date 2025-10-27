@@ -45,6 +45,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -97,9 +98,9 @@ class ContractResolverServiceTest {
         ContractRoleScopeDTO scope = createContractRoleScopeDTO();
         ProductDTO product = createProductDTO();
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(testPartyId, true))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
                 .thenReturn(Mono.just(contractPartiesResponse));
-        when(contractsApi.getContractById(testContractId)).thenReturn(Mono.just(contract));
+        when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
         when(contractRoleApi.getContractRole(testRoleId)).thenReturn(Mono.just(role));
         when(contractRoleScopeApi.getActiveScopesByRoleId(testRoleId)).thenReturn(Mono.just(scope));
         when(productApi.getProduct(testProductId)).thenReturn(Mono.just(product));
@@ -125,8 +126,8 @@ class ContractResolverServiceTest {
                 })
                 .verifyComplete();
 
-        verify(globalContractPartiesApi).getContractPartiesByPartyId(testPartyId, true);
-        verify(contractsApi).getContractById(testContractId);
+        verify(globalContractPartiesApi).getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
+        verify(contractsApi).getContractById(eq(testContractId), anyString());
         verify(contractRoleApi).getContractRole(testRoleId);
         verify(contractRoleScopeApi).getActiveScopesByRoleId(testRoleId);
         verify(productApi).getProduct(testProductId);
@@ -148,10 +149,10 @@ class ContractResolverServiceTest {
         
         PaginationResponse response = createPaginationResponse(List.of(contractParty1, contractParty2));
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(testPartyId, true))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
                 .thenReturn(Mono.just(response));
-        when(contractsApi.getContractById(testContractId)).thenReturn(Mono.just(createContractDTO()));
-        when(contractsApi.getContractById(contract2Id)).thenReturn(Mono.just(createContractDTO(contract2Id)));
+        when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(createContractDTO()));
+        when(contractsApi.getContractById(eq(contract2Id), anyString())).thenReturn(Mono.just(createContractDTO(contract2Id)));
         when(contractRoleApi.getContractRole(testRoleId)).thenReturn(Mono.just(createContractRoleDTO()));
         when(contractRoleApi.getContractRole(role2Id)).thenReturn(Mono.just(createContractRoleDTO(role2Id)));
         when(contractRoleScopeApi.getActiveScopesByRoleId(any())).thenReturn(Mono.just(createContractRoleScopeDTO()));
@@ -170,7 +171,7 @@ class ContractResolverServiceTest {
         // Given
         PaginationResponse emptyResponse = createPaginationResponse(List.of());
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(testPartyId, true))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
                 .thenReturn(Mono.just(emptyResponse));
 
         // When & Then
@@ -180,14 +181,14 @@ class ContractResolverServiceTest {
                 })
                 .verifyComplete();
 
-        verify(globalContractPartiesApi).getContractPartiesByPartyId(testPartyId, true);
+        verify(globalContractPartiesApi).getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
         verifyNoInteractions(contractsApi, contractRoleApi, contractRoleScopeApi, productApi);
     }
 
     @Test
     void resolveActiveContracts_contractPartiesFetchFails_returnsEmpty() {
         // Given
-        when(globalContractPartiesApi.getContractPartiesByPartyId(testPartyId, true))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
                 .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
 
         // When & Then
@@ -204,9 +205,9 @@ class ContractResolverServiceTest {
         ContractPartyDTO contractParty = createContractPartyDTO();
         PaginationResponse response = createPaginationResponse(List.of(contractParty));
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(testPartyId, true))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
                 .thenReturn(Mono.just(response));
-        when(contractsApi.getContractById(testContractId))
+        when(contractsApi.getContractById(eq(testContractId), anyString()))
                 .thenReturn(Mono.error(new RuntimeException("Contract not found")));
 
         // When & Then - Error should propagate, no partial data
@@ -225,9 +226,9 @@ class ContractResolverServiceTest {
         ContractDTO contract = createContractDTO();
         ProductDTO product = createProductDTO();
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(testPartyId, true))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
                 .thenReturn(Mono.just(response));
-        when(contractsApi.getContractById(testContractId)).thenReturn(Mono.just(contract));
+        when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
         when(contractRoleApi.getContractRole(testRoleId))
                 .thenReturn(Mono.error(new RuntimeException("Role not found")));
         when(contractRoleScopeApi.getActiveScopesByRoleId(testRoleId))
@@ -251,9 +252,9 @@ class ContractResolverServiceTest {
         ContractRoleDTO role = createContractRoleDTO();
         ContractRoleScopeDTO scope = createContractRoleScopeDTO();
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(testPartyId, true))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
                 .thenReturn(Mono.just(response));
-        when(contractsApi.getContractById(testContractId)).thenReturn(Mono.just(contract));
+        when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
         when(contractRoleApi.getContractRole(testRoleId)).thenReturn(Mono.just(role));
         when(contractRoleScopeApi.getActiveScopesByRoleId(testRoleId)).thenReturn(Mono.just(scope));
         when(productApi.getProduct(testProductId))
@@ -276,9 +277,9 @@ class ContractResolverServiceTest {
         ContractRoleDTO role = createContractRoleDTO();
         ProductDTO product = createProductDTO();
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(testPartyId, true))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
                 .thenReturn(Mono.just(response));
-        when(contractsApi.getContractById(testContractId)).thenReturn(Mono.just(contract));
+        when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
         when(contractRoleApi.getContractRole(testRoleId)).thenReturn(Mono.just(role));
         when(contractRoleScopeApi.getActiveScopesByRoleId(testRoleId))
                 .thenReturn(Mono.error(new RuntimeException("Scopes service down")));

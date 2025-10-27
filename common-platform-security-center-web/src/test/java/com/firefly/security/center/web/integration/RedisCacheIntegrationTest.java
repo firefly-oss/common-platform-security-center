@@ -46,6 +46,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
@@ -216,14 +217,14 @@ class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         mockContractParty.setIsActive(true);
         PaginationResponse contractPartiesResponse = new PaginationResponse();
         contractPartiesResponse.setContent(Collections.singletonList(mockContractParty));
-        when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class)))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class), anyString()))
                 .thenReturn(Mono.just(contractPartiesResponse));
 
         // Mock ContractsApi - return contract details
         ContractDTO mockContract = new ContractDTO();
         mockContract.setContractNumber("CNT-001");
         mockContract.setContractStatus(ContractDTO.ContractStatusEnum.ACTIVE);
-        when(contractsApi.getContractById(any(UUID.class)))
+        when(contractsApi.getContractById(any(UUID.class), anyString()))
                 .thenReturn(Mono.just(mockContract));
 
         // Mock other APIs to return empty/default responses
