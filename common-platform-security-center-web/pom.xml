@@ -119,25 +119,21 @@
             <groupId>com.firefly</groupId>
             <artifactId>common-platform-customer-mgmt-sdk</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.firefly</groupId>
             <artifactId>common-platform-contract-mgmt-sdk</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.firefly</groupId>
             <artifactId>common-platform-product-mgmt-sdk</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.firefly</groupId>
             <artifactId>common-platform-reference-master-data-sdk</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-            <scope>test</scope>
         </dependency>
 
 
@@ -160,7 +156,6 @@
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-admin-client</artifactId>
             <version>23.0.0</version>
-            <scope>test</scope>
         </dependency>
         
         <!-- IDP Adapter Implementations for Integration Tests -->
@@ -168,7 +163,6 @@
             <groupId>com.firefly</groupId>
             <artifactId>lib-idp-keycloak-impl</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.firefly</groupId>

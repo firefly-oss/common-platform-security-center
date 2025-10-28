@@ -38,6 +38,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -91,8 +92,7 @@ public class ContractResolverService {
         log.debug("Fetching contract parties for partyId: {}", partyId);
         
         return globalContractPartiesApi.getContractPartiesByPartyId(partyId, true, UUID.randomUUID().toString())
-                .flatMapMany(response -> Flux.fromIterable(response.getContent()))
-                .map(contractParty -> (ContractPartyDTO) contractParty)
+                .flatMapMany(response -> Flux.fromIterable(Objects.requireNonNull(response.getContent())))
                 .map(this::mapContractPartyDTOToContractInfo)
                 .doOnNext(contractInfo -> 
                     log.debug("Found contract party: contractId={}, roleId={}", 
@@ -194,7 +194,7 @@ public class ContractResolverService {
      * Fetches role details from reference-master-data using SDK.
      */
     private Mono<RoleInfoDTO> fetchRole(UUID roleId) {
-        return contractRoleApi.getContractRole(roleId)
+        return contractRoleApi.getContractRole(roleId, UUID.randomUUID().toString())
                 .map(this::mapContractRoleDTOToRoleInfo)
                 .doOnSuccess(role ->
                     log.debug("Fetched role: {}", roleId))
@@ -206,16 +206,13 @@ public class ContractResolverService {
      * Fetches all active scopes (permissions) for a role from reference-master-data using SDK.
      */
     private Mono<List<RoleScopeInfoDTO>> fetchRoleScopes(UUID roleId) {
-        return contractRoleScopeApi.getActiveScopesByRoleId(roleId)
+        return contractRoleScopeApi.getActiveScopesByRoleId(roleId, UUID.randomUUID().toString())
                 .map(this::mapContractRoleScopeDTOToRoleScopeInfo)
-                .map(Collections::singletonList)
-                .doOnSuccess(scopes -> {
-                    if (scopes != null) {
-                        log.debug("Fetched {} scopes for roleId: {}", scopes.size(), roleId);
-                    }
-                })
+                .collectList()
+                .doOnSuccess(scopes ->
+                        log.debug("Fetched {} scopes for roleId: {}", scopes.size(), roleId))
                 .doOnError(error ->
-                    log.error("Failed to fetch role scopes for roleId: {}", roleId, error))
+                        log.error("Failed to fetch role scopes for roleId: {}", roleId, error))
                 .onErrorResume(error -> {
                     log.warn("No scopes found for roleId: {}", roleId);
                     return Mono.just(Collections.emptyList());

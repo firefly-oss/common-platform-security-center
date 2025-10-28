@@ -16,6 +16,7 @@
 
 package com.firefly.security.center.web.integration;
 
+import com.firefly.core.contract.sdk.model.PaginationResponseContractPartyDTO;
 import com.firefly.core.customer.sdk.model.PartyDTO;
 import com.firefly.core.customer.sdk.model.NaturalPersonDTO;
 import com.firefly.core.customer.sdk.model.EmailContactDTO;
@@ -38,6 +39,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
@@ -85,7 +87,7 @@ import static org.mockito.Mockito.when;
         org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
         org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class
 })
-// @Disabled("Integration test - requires Docker with Redis container")
+@Disabled("Integration test - requires Docker with Redis container")
 class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
 
     private static final String REALM_NAME = "firefly-test";
@@ -173,12 +175,12 @@ class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
             throw new RuntimeException("Failed to set party fields", e);
         }
 
-        when(partiesApi.getPartyById(any(UUID.class)))
+        when(partiesApi.getPartyById(any(UUID.class), anyString()))
                 .thenReturn(Mono.just(mockParty));
 
         // Mock partiesApi.filterParties() for DefaultUserMappingService
-        com.firefly.core.customer.sdk.model.PaginationResponse partiesResponse =
-                new com.firefly.core.customer.sdk.model.PaginationResponse();
+        com.firefly.core.customer.sdk.model.PaginationResponsePartyDTO partiesResponse =
+                new com.firefly.core.customer.sdk.model.PaginationResponsePartyDTO();
         partiesResponse.setContent(Collections.singletonList(mockParty));
         when(partiesApi.filterParties(any(), any()))
                 .thenReturn(Mono.just(partiesResponse));
@@ -188,7 +190,7 @@ class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         mockPerson.setPartyId(testPartyId);
         mockPerson.setGivenName("Test");
         mockPerson.setFamilyName1("User");
-        when(naturalPersonsApi.getNaturalPersonByPartyId(any(UUID.class)))
+        when(naturalPersonsApi.getNaturalPersonByPartyId(any(UUID.class), anyString()))
                 .thenReturn(Mono.just(mockPerson));
 
         // Mock EmailContactsApi - return email
@@ -215,7 +217,7 @@ class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         mockContractParty.setPartyId(testPartyId);
         mockContractParty.setRoleInContractId(UUID.randomUUID());
         mockContractParty.setIsActive(true);
-        PaginationResponse contractPartiesResponse = new PaginationResponse();
+        PaginationResponseContractPartyDTO contractPartiesResponse = new PaginationResponseContractPartyDTO();
         contractPartiesResponse.setContent(Collections.singletonList(mockContractParty));
         when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class), anyString()))
                 .thenReturn(Mono.just(contractPartiesResponse));
@@ -230,10 +232,10 @@ class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         // Mock other APIs to return empty/default responses
         when(productApi.getProduct(any(UUID.class)))
                 .thenReturn(Mono.empty());
-        when(contractRoleApi.getContractRole(any(UUID.class)))
+        when(contractRoleApi.getContractRole(any(UUID.class), anyString()))
                 .thenReturn(Mono.empty());
-        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class)))
-                .thenReturn(Mono.empty());
+        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class), anyString()))
+                .thenReturn(Flux.empty());
     }
 
     @Test

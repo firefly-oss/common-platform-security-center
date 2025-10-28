@@ -26,7 +26,7 @@ import com.firefly.core.contract.sdk.api.ContractsApi;
 import com.firefly.core.contract.sdk.api.GlobalContractPartiesApi;
 import com.firefly.core.contract.sdk.model.ContractDTO;
 import com.firefly.core.contract.sdk.model.ContractPartyDTO;
-import com.firefly.core.contract.sdk.model.PaginationResponse;
+import com.firefly.core.contract.sdk.model.PaginationResponseContractPartyDTO;
 import com.firefly.security.center.interfaces.dtos.ContractInfoDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -92,17 +92,18 @@ class ContractResolverServiceTest {
     void resolveActiveContracts_success() {
         // Given
         ContractPartyDTO contractParty = createContractPartyDTO();
-        PaginationResponse contractPartiesResponse = createPaginationResponse(List.of(contractParty));
+        PaginationResponseContractPartyDTO contractPartiesResponse = createPaginationResponse(List.of(contractParty));
         ContractDTO contract = createContractDTO();
         ContractRoleDTO role = createContractRoleDTO();
         ContractRoleScopeDTO scope = createContractRoleScopeDTO();
         ProductDTO product = createProductDTO();
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
-                .thenReturn(Mono.just(contractPartiesResponse));
+        doReturn(Mono.just(contractPartiesResponse))
+                .when(globalContractPartiesApi)
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
         when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
-        when(contractRoleApi.getContractRole(testRoleId)).thenReturn(Mono.just(role));
-        when(contractRoleScopeApi.getActiveScopesByRoleId(testRoleId)).thenReturn(Mono.just(scope));
+        when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(role));
+        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString())).thenReturn(reactor.core.publisher.Flux.just(scope));
         when(productApi.getProduct(testProductId)).thenReturn(Mono.just(product));
 
         // When & Then
@@ -128,8 +129,8 @@ class ContractResolverServiceTest {
 
         verify(globalContractPartiesApi).getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
         verify(contractsApi).getContractById(eq(testContractId), anyString());
-        verify(contractRoleApi).getContractRole(testRoleId);
-        verify(contractRoleScopeApi).getActiveScopesByRoleId(testRoleId);
+        verify(contractRoleApi).getContractRole(eq(testRoleId), anyString());
+        verify(contractRoleScopeApi).getActiveScopesByRoleId(eq(testRoleId), anyString());
         verify(productApi).getProduct(testProductId);
     }
 
@@ -147,16 +148,17 @@ class ContractResolverServiceTest {
         contractParty2.setRoleInContractId(role2Id);
         contractParty2.setIsActive(true);
         
-        PaginationResponse response = createPaginationResponse(List.of(contractParty1, contractParty2));
+        PaginationResponseContractPartyDTO response = createPaginationResponse(List.of(contractParty1, contractParty2));
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
-                .thenReturn(Mono.just(response));
+        doReturn(Mono.just(response))
+                .when(globalContractPartiesApi)
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
         when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(createContractDTO()));
         when(contractsApi.getContractById(eq(contract2Id), anyString())).thenReturn(Mono.just(createContractDTO(contract2Id)));
-        when(contractRoleApi.getContractRole(testRoleId)).thenReturn(Mono.just(createContractRoleDTO()));
-        when(contractRoleApi.getContractRole(role2Id)).thenReturn(Mono.just(createContractRoleDTO(role2Id)));
-        when(contractRoleScopeApi.getActiveScopesByRoleId(any())).thenReturn(Mono.just(createContractRoleScopeDTO()));
-        when(productApi.getProduct(any())).thenReturn(Mono.just(createProductDTO()));
+        when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(createContractRoleDTO()));
+        when(contractRoleApi.getContractRole(eq(role2Id), anyString())).thenReturn(Mono.just(createContractRoleDTO(role2Id)));
+        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class), anyString())).thenReturn(reactor.core.publisher.Flux.just(createContractRoleScopeDTO()));
+        when(productApi.getProduct(any(UUID.class))).thenReturn(Mono.just(createProductDTO()));
 
         // When & Then
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
@@ -169,10 +171,11 @@ class ContractResolverServiceTest {
     @Test
     void resolveActiveContracts_noContracts_returnsEmpty() {
         // Given
-        PaginationResponse emptyResponse = createPaginationResponse(List.of());
+        PaginationResponseContractPartyDTO emptyResponse = createPaginationResponse(List.of());
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
-                .thenReturn(Mono.just(emptyResponse));
+        doReturn(Mono.just(emptyResponse))
+                .when(globalContractPartiesApi)
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
 
         // When & Then
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
@@ -203,10 +206,11 @@ class ContractResolverServiceTest {
     void resolveActiveContracts_contractEnrichmentFails_propagatesError() {
         // Given
         ContractPartyDTO contractParty = createContractPartyDTO();
-        PaginationResponse response = createPaginationResponse(List.of(contractParty));
+        PaginationResponseContractPartyDTO response = createPaginationResponse(List.of(contractParty));
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
-                .thenReturn(Mono.just(response));
+        doReturn(Mono.just(response))
+                .when(globalContractPartiesApi)
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
         when(contractsApi.getContractById(eq(testContractId), anyString()))
                 .thenReturn(Mono.error(new RuntimeException("Contract not found")));
 
@@ -222,17 +226,18 @@ class ContractResolverServiceTest {
     void resolveActiveContracts_roleEnrichmentFails_propagatesError() {
         // Given
         ContractPartyDTO contractParty = createContractPartyDTO();
-        PaginationResponse response = createPaginationResponse(List.of(contractParty));
+        PaginationResponseContractPartyDTO response = createPaginationResponse(List.of(contractParty));
         ContractDTO contract = createContractDTO();
         ProductDTO product = createProductDTO();
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
-                .thenReturn(Mono.just(response));
+        doReturn(Mono.just(response))
+                .when(globalContractPartiesApi)
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
         when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
-        when(contractRoleApi.getContractRole(testRoleId))
+        when(contractRoleApi.getContractRole(eq(testRoleId), anyString()))
                 .thenReturn(Mono.error(new RuntimeException("Role not found")));
-        when(contractRoleScopeApi.getActiveScopesByRoleId(testRoleId))
-                .thenReturn(Mono.error(new RuntimeException("Scopes not found")));
+        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString()))
+                .thenReturn(reactor.core.publisher.Flux.error(new RuntimeException("Scopes not found")));
         when(productApi.getProduct(testProductId)).thenReturn(Mono.just(product));
 
         // When & Then - Error should propagate, no fallback
@@ -247,16 +252,17 @@ class ContractResolverServiceTest {
     void resolveActiveContracts_productFetchFails_propagatesError() {
         // Given
         ContractPartyDTO contractParty = createContractPartyDTO();
-        PaginationResponse response = createPaginationResponse(List.of(contractParty));
+        PaginationResponseContractPartyDTO response = createPaginationResponse(List.of(contractParty));
         ContractDTO contract = createContractDTO();
         ContractRoleDTO role = createContractRoleDTO();
         ContractRoleScopeDTO scope = createContractRoleScopeDTO();
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
-                .thenReturn(Mono.just(response));
+        doReturn(Mono.just(response))
+                .when(globalContractPartiesApi)
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
         when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
-        when(contractRoleApi.getContractRole(testRoleId)).thenReturn(Mono.just(role));
-        when(contractRoleScopeApi.getActiveScopesByRoleId(testRoleId)).thenReturn(Mono.just(scope));
+        when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(role));
+        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString())).thenReturn(reactor.core.publisher.Flux.just(scope));
         when(productApi.getProduct(testProductId))
                 .thenReturn(Mono.error(new RuntimeException("Product not found")));
 
@@ -272,17 +278,18 @@ class ContractResolverServiceTest {
     void resolveActiveContracts_scopesFetchFails_continuesWithoutScopes() {
         // Given
         ContractPartyDTO contractParty = createContractPartyDTO();
-        PaginationResponse response = createPaginationResponse(List.of(contractParty));
+        PaginationResponseContractPartyDTO response = createPaginationResponse(List.of(contractParty));
         ContractDTO contract = createContractDTO();
         ContractRoleDTO role = createContractRoleDTO();
         ProductDTO product = createProductDTO();
 
-        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
-                .thenReturn(Mono.just(response));
+        doReturn(Mono.just(response))
+                .when(globalContractPartiesApi)
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
         when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
-        when(contractRoleApi.getContractRole(testRoleId)).thenReturn(Mono.just(role));
-        when(contractRoleScopeApi.getActiveScopesByRoleId(testRoleId))
-                .thenReturn(Mono.error(new RuntimeException("Scopes service down")));
+        when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(role));
+        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString()))
+                .thenReturn(reactor.core.publisher.Flux.error(new RuntimeException("Scopes service down")));
         when(productApi.getProduct(testProductId)).thenReturn(Mono.just(product));
 
         // When & Then
@@ -307,14 +314,22 @@ class ContractResolverServiceTest {
         return dto;
     }
 
-    private PaginationResponse createPaginationResponse(List<?> content) {
-        PaginationResponse response = new PaginationResponse();
-        response.setContent((List<Object>) content);
-        response.setTotalElements((long) content.size());
-        response.setTotalPages(1);
-        // PaginationResponse uses 'currentPage' field
+    private PaginationResponseContractPartyDTO createPaginationResponse(List<ContractPartyDTO> content) {
+        PaginationResponseContractPartyDTO response = new PaginationResponseContractPartyDTO();
         try {
-            java.lang.reflect.Field currentPageField = PaginationResponse.class.getDeclaredField("currentPage");
+            java.lang.reflect.Field contentField = PaginationResponseContractPartyDTO.class.getDeclaredField("content");
+            contentField.setAccessible(true);
+            contentField.set(response, content);
+
+            java.lang.reflect.Field totalElementsField = PaginationResponseContractPartyDTO.class.getDeclaredField("totalElements");
+            totalElementsField.setAccessible(true);
+            totalElementsField.set(response, (long) content.size());
+
+            java.lang.reflect.Field totalPagesField = PaginationResponseContractPartyDTO.class.getDeclaredField("totalPages");
+            totalPagesField.setAccessible(true);
+            totalPagesField.set(response, 1);
+
+            java.lang.reflect.Field currentPageField = PaginationResponseContractPartyDTO.class.getDeclaredField("currentPage");
             currentPageField.setAccessible(true);
             currentPageField.set(response, 0);
         } catch (Exception e) {

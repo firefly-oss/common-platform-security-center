@@ -27,6 +27,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -58,7 +60,6 @@ import java.util.UUID;
  * that creates parties in customer-mgmt when they don't exist.
  */
 @Service
-@ConditionalOnMissingBean(UserMappingService.class)
 @RequiredArgsConstructor
 @Slf4j
 public class DefaultUserMappingService implements UserMappingService {
@@ -120,7 +121,7 @@ public class DefaultUserMappingService implements UserMappingService {
         pagination.setPageSize(100); // Process in batches of 100
         filter.setPagination(pagination);
 
-        return partiesApi.filterParties(filter, null)
+        return partiesApi.filterParties(filter, UUID.randomUUID().toString())
                 .expand(response -> {
                     // If there are more pages, fetch them
                     if (response.getCurrentPage() != null &&
@@ -130,7 +131,7 @@ public class DefaultUserMappingService implements UserMappingService {
                         nextPage.setPageSize(100);
                         FilterRequestPartyDTO nextFilter = new FilterRequestPartyDTO();
                         nextFilter.setPagination(nextPage);
-                        return partiesApi.filterParties(nextFilter, null);
+                        return partiesApi.filterParties(nextFilter, UUID.randomUUID().toString());
                     }
                     return Mono.empty();
                 })
@@ -141,11 +142,13 @@ public class DefaultUserMappingService implements UserMappingService {
                     }
 
                     return Flux.fromIterable(response.getContent())
-                            .cast(PartyDTO.class)
-                            .flatMap(party -> checkPartyEmail(party.getPartyId(), email)
-                                    .map(hasEmail -> hasEmail ? party.getPartyId() : null)
-                                    .onErrorReturn(null))
-                            .filter(partyId -> partyId != null);
+                            .flatMap(item -> {
+                                Map<String, Object> map = (Map<String, Object>) item;
+                                UUID partyId = UUID.fromString((String) map.get("partyId"));
+                                return checkPartyEmail(partyId, email)
+                                        .mapNotNull(hasEmail -> hasEmail ? partyId : null);
+                            })
+                            .filter(Objects::nonNull);
                 })
                 .next() // Get the first match
                 .doOnSuccess(partyId -> {
@@ -165,11 +168,19 @@ public class DefaultUserMappingService implements UserMappingService {
         FilterRequestEmailContactDTO filter = new FilterRequestEmailContactDTO();
         EmailContactDTO emailFilter = new EmailContactDTO();
         emailFilter.setEmail(email);
+        PaginationRequest pagination = new PaginationRequest();
+        pagination.setPageNumber(0);
+        pagination.setPageSize(100); // Process in batches of 100
+        filter.setPagination(pagination);
         filter.setFilters(emailFilter);
+        filter.setPagination(pagination);
 
-        return emailContactsApi.filterEmailContacts(partyId, filter, null)
-                .map(response -> response.getContent() != null && !response.getContent().isEmpty())
-                .onErrorReturn(false);
+        return emailContactsApi.filterEmailContacts(partyId, filter, UUID.randomUUID().toString())
+                .map(response -> response != null && response.getContent() != null && !response.getContent().isEmpty())
+                .onErrorResume(e -> {
+                    log.error("Error checking email for partyId {}: {}", partyId, e.getMessage(), e);
+                    return Mono.just(false);
+                });
     }
 
     /**
@@ -199,11 +210,11 @@ public class DefaultUserMappingService implements UserMappingService {
         pagination.setPageSize(10); // Should only find one
         filter.setPagination(pagination);
 
-        return partiesApi.filterParties(filter, null)
+        return partiesApi.filterParties(filter, UUID.randomUUID().toString())
                 .flatMap(response -> {
                     if (response.getContent() != null && !response.getContent().isEmpty()) {
                         Object firstItem = response.getContent().get(0);
-                        if (firstItem instanceof PartyDTO) {
+                        if (firstItem != null) {
                             UUID partyId = ((PartyDTO) firstItem).getPartyId();
                             log.info("Found party by username: {} -> {}", username, partyId);
                             return Mono.just(partyId);

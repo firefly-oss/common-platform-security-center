@@ -25,8 +25,7 @@ import org.springframework.context.annotation.ComponentScan;
  */
 @SpringBootApplication
 @ComponentScan(basePackages = {
-    "com.firefly.security.center.web",
-    "com.firefly.security.center.core"
+    "com.firefly.security"
 })
 public class SecurityCenterApplication {
 

@@ -27,6 +27,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -231,14 +232,14 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         }
         mockParty.setPartyKind(com.firefly.core.customer.sdk.model.PartyDTO.PartyKindEnum.INDIVIDUAL);
         mockParty.setPreferredLanguage("en");
-        when(partiesApi.getPartyById(any(UUID.class)))
+        when(partiesApi.getPartyById(any(UUID.class), anyString()))
                 .thenReturn(Mono.just(mockParty));
 
         // Mock Natural Person
         com.firefly.core.customer.sdk.model.NaturalPersonDTO mockPerson = new com.firefly.core.customer.sdk.model.NaturalPersonDTO();
         mockPerson.setGivenName("Test");
         mockPerson.setFamilyName1("User");
-        when(naturalPersonsApi.getNaturalPersonByPartyId(any(UUID.class)))
+        when(naturalPersonsApi.getNaturalPersonByPartyId(any(UUID.class), anyString()))
                 .thenReturn(Mono.just(mockPerson));
 
         // Mock Email Contacts
@@ -269,8 +270,8 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         mockContractParty.setRoleInContractId(UUID.randomUUID());
         mockContractParty.setIsActive(true);
         
-        com.firefly.core.contract.sdk.model.PaginationResponse contractPartiesResponse = 
-                new com.firefly.core.contract.sdk.model.PaginationResponse();
+        com.firefly.core.contract.sdk.model.PaginationResponseContractPartyDTO contractPartiesResponse =
+                new com.firefly.core.contract.sdk.model.PaginationResponseContractPartyDTO();
         contractPartiesResponse.setContent(Collections.singletonList(mockContractParty));
         contractPartiesResponse.setTotalElements(1L);
         when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class), anyString()))
@@ -319,7 +320,7 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set role ID", e);
         }
-        when(contractRoleApi.getContractRole(any(UUID.class)))
+        when(contractRoleApi.getContractRole(any(UUID.class), anyString()))
                 .thenReturn(Mono.just(mockRole));
 
         // Mock Role Scopes
@@ -334,8 +335,8 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set scope ID", e);
         }
-        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class)))
-                .thenReturn(Mono.just(mockScope));
+        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class), anyString()))
+                .thenReturn(Flux.just(mockScope));
     }
 
     @Test

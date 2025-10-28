@@ -83,7 +83,7 @@
             <artifactId>lib-idp-keycloak-impl</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <scope>runtime</scope>
-            <optional>true</optional>  <!-- Optional - only loaded if provider=keycloak -->
+              <!-- Optional - only loaded if provider=keycloak -->
         </dependency>
 
         <!-- Firefly IDP AWS Cognito Implementation -->
