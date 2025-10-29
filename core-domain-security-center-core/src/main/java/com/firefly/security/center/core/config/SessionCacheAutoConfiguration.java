@@ -26,6 +26,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.SearchStrategy;
 import org.springframework.context.annotation.Bean;
 
 import java.time.Duration;
@@ -66,7 +67,6 @@ public class SessionCacheAutoConfiguration {
      * @return a dedicated cache manager for sessions
      */
     @Bean("sessionCacheManager")
-    @ConditionalOnBean(CacheManagerFactory.class)
     @ConditionalOnMissingBean(name = "sessionCacheManager")
     public FireflyCacheManager sessionCacheManager(CacheManagerFactory factory) {
         String description = String.format(
@@ -77,7 +77,7 @@ public class SessionCacheAutoConfiguration {
         // Prefer Redis for distributed session management across multiple instances
         return factory.createCacheManager(
                 "user-sessions",
-                CacheType.REDIS,
+                CacheType.AUTO,
                 SESSION_CACHE_KEY_PREFIX,
                 SESSION_CACHE_TTL,
                 description,
