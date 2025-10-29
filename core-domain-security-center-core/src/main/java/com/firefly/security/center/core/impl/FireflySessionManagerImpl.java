@@ -17,6 +17,7 @@
 package com.firefly.security.center.core.impl;
 
 import com.firefly.common.cache.manager.FireflyCacheManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 import com.firefly.security.center.core.services.SessionAggregationService;
 import com.firefly.security.center.interfaces.dtos.SessionContextDTO;
 import com.firefly.security.center.interfaces.dtos.SessionMetadataDTO;
@@ -32,10 +33,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Implementation of FireflySessionManager with caching support
+ * Implementation of FireflySessionManager with dedicated session cache.
+ * <p>
+ * Uses the dedicated sessionCacheManager bean created by SessionCacheAutoConfiguration
+ * to avoid conflicts with other application caches.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class FireflySessionManagerImpl implements FireflySessionManager {
 
@@ -46,6 +49,19 @@ public class FireflySessionManagerImpl implements FireflySessionManager {
 
     private final SessionAggregationService sessionAggregationService;
     private final FireflyCacheManager cacheManager;
+
+    /**
+     * Constructor that injects the dedicated session cache manager.
+     * 
+     * @param sessionAggregationService service for aggregating session data
+     * @param cacheManager dedicated session cache manager (qualified bean)
+     */
+    public FireflySessionManagerImpl(
+            SessionAggregationService sessionAggregationService,
+            @Qualifier("sessionCacheManager") FireflyCacheManager cacheManager) {
+        this.sessionAggregationService = sessionAggregationService;
+        this.cacheManager = cacheManager;
+    }
 
     @Override
     public Mono<SessionContextDTO> createOrGetSession(ServerWebExchange exchange) {
