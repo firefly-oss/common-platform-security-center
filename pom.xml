@@ -10,7 +10,7 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>common-platform-security-center</artifactId>
+    <artifactId>core-domain-security-center</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -18,15 +18,15 @@
     <description>Session management and security orchestration for the Firefly Core Banking Platform</description>
 
     <modules>
-        <module>common-platform-security-center-interfaces</module>
-        <module>common-platform-security-center-session</module>
-        <module>common-platform-security-center-core</module>
-        <module>common-platform-security-center-web</module>
-        <module>common-platform-security-center-sdk</module>
+        <module>core-domain-security-center-interfaces</module>
+        <module>core-domain-security-center-session</module>
+        <module>core-domain-security-center-core</module>
+        <module>core-domain-security-center-web</module>
+        <module>core-domain-security-center-sdk</module>
     </modules>
 
     <properties>
-        <common-platform-security-center.version>1.0.0-SNAPSHOT</common-platform-security-center.version>
+        <core-domain-security-center.version>1.0.0-SNAPSHOT</core-domain-security-center.version>
     </properties>
 
     <dependencyManagement>
@@ -34,27 +34,27 @@
             <!-- Internal modules -->
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>common-platform-security-center-interfaces</artifactId>
+                <artifactId>core-domain-security-center-interfaces</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>common-platform-security-center-session</artifactId>
+                <artifactId>core-domain-security-center-session</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>common-platform-security-center-core</artifactId>
+                <artifactId>core-domain-security-center-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>common-platform-security-center-web</artifactId>
+                <artifactId>core-domain-security-center-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>common-platform-security-center-sdk</artifactId>
+                <artifactId>core-domain-security-center-sdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

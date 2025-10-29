@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>com.firefly</groupId>
-        <artifactId>common-platform-security-center</artifactId>
+        <artifactId>core-domain-security-center</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>common-platform-security-center-sdk</artifactId>
+    <artifactId>core-domain-security-center-sdk</artifactId>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -30,7 +30,7 @@
         <!-- Web module for OpenAPI spec -->
         <dependency>
             <groupId>com.firefly</groupId>
-            <artifactId>common-platform-security-center-web</artifactId>
+            <artifactId>core-domain-security-center-web</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -107,7 +107,7 @@
                 <version>${openapi-generator.version}</version>
                 <executions>
                     <execution>
-                        <id>common-platform-security-center-sdk</id>
+                        <id>core-domain-security-center-sdk</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>

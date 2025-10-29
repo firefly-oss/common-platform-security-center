@@ -12,21 +12,21 @@
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct-processor/1.5.5.Final/mapstruct-processor-1.5.5.Final.jar" />
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok-mapstruct-binding/0.2.0/lombok-mapstruct-binding-0.2.0.jar" />
         </processorPath>
-        <module name="common-platform-security-center-core" />
-        <module name="common-platform-security-center-sdk" />
-        <module name="common-platform-security-center-interfaces" />
-        <module name="common-platform-security-center-web" />
-        <module name="common-platform-security-center-session" />
+        <module name="core-domain-security-center-web" />
+        <module name="core-domain-security-center-interfaces" />
+        <module name="core-domain-security-center-core" />
+        <module name="core-domain-security-center-sdk" />
+        <module name="core-domain-security-center-session" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="common-platform-security-center-core" options="-parameters" />
-      <module name="common-platform-security-center-interfaces" options="-parameters" />
-      <module name="common-platform-security-center-sdk" options="-parameters" />
-      <module name="common-platform-security-center-session" options="-parameters" />
-      <module name="common-platform-security-center-web" options="-parameters" />
+      <module name="core-domain-security-center-core" options="-parameters" />
+      <module name="core-domain-security-center-interfaces" options="-parameters" />
+      <module name="core-domain-security-center-sdk" options="-parameters" />
+      <module name="core-domain-security-center-session" options="-parameters" />
+      <module name="core-domain-security-center-web" options="-parameters" />
     </option>
   </component>
 </project>

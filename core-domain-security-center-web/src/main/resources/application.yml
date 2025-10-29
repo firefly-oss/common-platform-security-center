@@ -1,6 +1,6 @@
 spring:
   application:
-    name: common-platform-security-center
+    name: core-domain-security-center
     version: 1.0.0
     description: Security Center - Authentication and Session Management
     team:
@@ -87,16 +87,16 @@ firefly:
     # Downstream microservice SDK clients
     clients:
       customer-mgmt:
-        base-url: ${CUSTOMER_MGMT_URL:http://localhost:8080}
+        base-url: ${CUSTOMER_MGMT_URL:http://localhost:8081}
         timeout-seconds: 10
       contract-mgmt:
-        base-url: ${CONTRACT_MGMT_URL:http://localhost:8081}
+        base-url: ${CONTRACT_MGMT_URL:http://localhost:8082}
         timeout-seconds: 10
       product-mgmt:
-        base-url: ${PRODUCT_MGMT_URL:http://localhost:8082}
+        base-url: ${PRODUCT_MGMT_URL:http://localhost:8083}
         timeout-seconds: 10
       reference-master-data:
-        base-url: ${REFERENCE_MASTER_DATA_URL:http://localhost:8083}
+        base-url: ${REFERENCE_MASTER_DATA_URL:http://localhost:8084}
         timeout-seconds: 10
 
 management:
