@@ -111,7 +111,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- SDK dependencies for integration tests (mocked) -->

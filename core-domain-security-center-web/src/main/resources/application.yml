@@ -36,13 +36,13 @@ firefly:
   # Firefly Common Cache configuration
   cache:
     enabled: true
-    default-cache-type: CAFFEINE  # Options: CAFFEINE, REDIS, AUTO
+    default-cache-type: REDIS  # Options: CAFFEINE, REDIS, AUTO
     metrics-enabled: true
     health-enabled: true
     
     caffeine:
       cache-name: session-cache
-      enabled: true
+      enabled: false
       key-prefix: "firefly:session"
       maximum-size: 10000
       expire-after-write: PT30M  # ISO-8601 duration format
@@ -51,7 +51,7 @@ firefly:
     # Optional Redis configuration (requires Redis dependencies)
     redis:
       cache-name: session-cache
-      enabled: false
+      enabled: true
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       database: 0
