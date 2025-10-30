@@ -16,11 +16,7 @@
 
 package com.firefly.security.center.core.services;
 
-import com.firefly.core.customer.sdk.api.PartiesApi;
-import com.firefly.core.customer.sdk.api.NaturalPersonsApi;
-import com.firefly.core.customer.sdk.api.LegalEntitiesApi;
-import com.firefly.core.customer.sdk.api.EmailContactsApi;
-import com.firefly.core.customer.sdk.api.PhoneContactsApi;
+import com.firefly.core.customer.sdk.api.*;
 import com.firefly.core.customer.sdk.model.*;
 import com.firefly.security.center.interfaces.dtos.CustomerInfoDTO;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +61,7 @@ public class CustomerResolverService {
         log.debug("Fetching enriched customer info for partyId: {}", partyId);
 
         return partiesApi.getPartyById(partyId, UUID.randomUUID().toString())
-                .flatMap(party -> enrichCustomerInfo(party))
+                .flatMap(this::enrichCustomerInfo)
                 .doOnSuccess(customer ->
                     log.debug("Successfully fetched enriched customer info for partyId: {}", partyId))
                 .doOnError(error ->
@@ -145,18 +141,18 @@ public class CustomerResolverService {
             name.append(person.getGivenName());
         }
         if (person.getMiddleName() != null && !person.getMiddleName().isEmpty()) {
-            if (name.length() > 0) name.append(" ");
+            if (!name.isEmpty()) name.append(" ");
             name.append(person.getMiddleName());
         }
         if (person.getFamilyName1() != null) {
-            if (name.length() > 0) name.append(" ");
+            if (!name.isEmpty()) name.append(" ");
             name.append(person.getFamilyName1());
         }
         if (person.getFamilyName2() != null && !person.getFamilyName2().isEmpty()) {
-            if (name.length() > 0) name.append(" ");
+            if (!name.isEmpty()) name.append(" ");
             name.append(person.getFamilyName2());
         }
-        return name.length() > 0 ? name.toString() : "Unknown Person";
+        return !name.isEmpty() ? name.toString() : "Unknown Person";
     }
 
     /**
@@ -215,7 +211,7 @@ public class CustomerResolverService {
                     String phone = phones.stream()
                             .filter(p -> p.getIsPrimary() != null && p.getIsPrimary())
                             .findFirst()
-                            .map(p -> p.getPhoneNumber())
+                            .map(PhoneContactDTO::getPhoneNumber)
                             .orElse(null);
                     return Mono.justOrEmpty(phone);
                 })

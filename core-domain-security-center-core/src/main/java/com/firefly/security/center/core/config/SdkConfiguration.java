@@ -16,17 +16,13 @@
 
 package com.firefly.security.center.core.config;
 
-import com.firefly.core.customer.sdk.api.PartiesApi;
-import com.firefly.core.customer.sdk.api.NaturalPersonsApi;
-import com.firefly.core.customer.sdk.api.LegalEntitiesApi;
-import com.firefly.core.customer.sdk.api.EmailContactsApi;
-import com.firefly.core.customer.sdk.api.PhoneContactsApi;
-import com.firefly.core.contract.sdk.api.ContractsApi;
-import com.firefly.core.contract.sdk.api.ContractPartiesApi;
-import com.firefly.core.contract.sdk.api.GlobalContractPartiesApi;
 import com.firefly.common.product.sdk.api.ProductApi;
 import com.firefly.common.reference.master.data.sdk.api.ContractRoleApi;
 import com.firefly.common.reference.master.data.sdk.api.ContractRoleScopeApi;
+import com.firefly.core.contract.sdk.api.ContractPartiesApi;
+import com.firefly.core.contract.sdk.api.ContractsApi;
+import com.firefly.core.contract.sdk.api.GlobalContractPartiesApi;
+import com.firefly.core.customer.sdk.api.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

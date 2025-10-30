@@ -16,20 +16,21 @@
 
 package com.firefly.security.center.core.services;
 
-import com.firefly.core.contract.sdk.api.ContractsApi;
-import com.firefly.core.contract.sdk.api.ContractPartiesApi;
-import com.firefly.core.contract.sdk.api.GlobalContractPartiesApi;
-import com.firefly.core.contract.sdk.model.ContractDTO;
-import com.firefly.core.contract.sdk.model.ContractPartyDTO;
-import com.firefly.core.contract.sdk.model.FilterRequestContractPartyDTO;
-import com.firefly.core.contract.sdk.model.PaginationResponse;
 import com.firefly.common.product.sdk.api.ProductApi;
 import com.firefly.common.product.sdk.model.ProductDTO;
 import com.firefly.common.reference.master.data.sdk.api.ContractRoleApi;
 import com.firefly.common.reference.master.data.sdk.api.ContractRoleScopeApi;
 import com.firefly.common.reference.master.data.sdk.model.ContractRoleDTO;
 import com.firefly.common.reference.master.data.sdk.model.ContractRoleScopeDTO;
-import com.firefly.security.center.interfaces.dtos.*;
+import com.firefly.core.contract.sdk.api.ContractPartiesApi;
+import com.firefly.core.contract.sdk.api.ContractsApi;
+import com.firefly.core.contract.sdk.api.GlobalContractPartiesApi;
+import com.firefly.core.contract.sdk.model.ContractDTO;
+import com.firefly.core.contract.sdk.model.ContractPartyDTO;
+import com.firefly.security.center.interfaces.dtos.ContractInfoDTO;
+import com.firefly.security.center.interfaces.dtos.ProductInfoDTO;
+import com.firefly.security.center.interfaces.dtos.RoleInfoDTO;
+import com.firefly.security.center.interfaces.dtos.RoleScopeInfoDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Service for resolving contracts with their associated roles and products using SDK.
@@ -269,8 +269,7 @@ public class ContractResolverService {
         return ContractInfoDTO.builder()
                 .contractId(contractDTO.getContractId())
                 .contractNumber(contractDTO.getContractNumber())
-                .contractStatus(contractDTO.getContractStatus() != null ? 
-                        contractDTO.getContractStatus().getValue() : "UNKNOWN")
+                .contractStatus(contractDTO.getContractStatus().getValue())
                 .startDate(contractDTO.getStartDate())
                 .endDate(contractDTO.getEndDate())
                 .product(productInfo)

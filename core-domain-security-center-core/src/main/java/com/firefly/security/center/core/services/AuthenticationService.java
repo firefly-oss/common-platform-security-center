@@ -18,7 +18,6 @@ package com.firefly.security.center.core.services;
 
 import com.firefly.idp.adapter.IdpAdapter;
 import com.firefly.idp.dtos.*;
-import com.firefly.security.center.interfaces.dtos.SessionContextDTO;
 import com.firefly.security.center.session.FireflySessionManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

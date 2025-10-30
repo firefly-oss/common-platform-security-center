@@ -2,6 +2,7 @@ package com.firefly.contract.sdk.dto;
 
 import lombok.Builder;
 import lombok.Data;
+
 import java.util.UUID;
 
 @Data

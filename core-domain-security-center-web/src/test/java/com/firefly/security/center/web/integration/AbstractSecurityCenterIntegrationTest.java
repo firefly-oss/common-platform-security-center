@@ -16,19 +16,13 @@
 
 package com.firefly.security.center.web.integration;
 
-import com.firefly.core.customer.sdk.api.PartiesApi;
-import com.firefly.core.customer.sdk.api.NaturalPersonsApi;
-import com.firefly.core.customer.sdk.api.LegalEntitiesApi;
-import com.firefly.core.customer.sdk.api.EmailContactsApi;
-import com.firefly.core.customer.sdk.api.PhoneContactsApi;
-import com.firefly.core.contract.sdk.api.ContractsApi;
-import com.firefly.core.contract.sdk.api.GlobalContractPartiesApi;
 import com.firefly.common.product.sdk.api.ProductApi;
 import com.firefly.common.reference.master.data.sdk.api.ContractRoleApi;
 import com.firefly.common.reference.master.data.sdk.api.ContractRoleScopeApi;
-import com.firefly.core.customer.sdk.model.*;
+import com.firefly.core.contract.sdk.api.ContractsApi;
+import com.firefly.core.contract.sdk.api.GlobalContractPartiesApi;
+import com.firefly.core.customer.sdk.api.*;
 import com.firefly.security.center.web.config.SecurityCenterTestConfiguration;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -36,14 +30,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import reactor.core.publisher.Mono;
 
-import java.util.Collections;
 import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 /**
  * Abstract base class for Security Center integration tests.

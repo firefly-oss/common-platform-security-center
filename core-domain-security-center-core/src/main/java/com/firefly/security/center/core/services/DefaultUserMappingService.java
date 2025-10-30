@@ -22,7 +22,6 @@ import com.firefly.core.customer.sdk.model.*;
 import com.firefly.idp.dtos.UserInfoResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -213,11 +212,11 @@ public class DefaultUserMappingService implements UserMappingService {
         return partiesApi.filterParties(filter, UUID.randomUUID().toString())
                 .flatMap(response -> {
                     if (response.getContent() != null && !response.getContent().isEmpty()) {
-                        Object firstItem = response.getContent().get(0);
+                        PartyDTO firstItem = response.getContent().getFirst();
                         if (firstItem != null) {
-                            UUID partyId = ((PartyDTO) firstItem).getPartyId();
+                            UUID partyId = firstItem.getPartyId();
                             log.info("Found party by username: {} -> {}", username, partyId);
-                            return Mono.just(partyId);
+                            return Mono.just(Objects.requireNonNull(partyId));
                         }
                     }
                     return Mono.error(new IllegalStateException(

@@ -1,6 +1,5 @@
 package com.firefly.security.center.core.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firefly.idp.dtos.enums.UserRoleEnum;
 

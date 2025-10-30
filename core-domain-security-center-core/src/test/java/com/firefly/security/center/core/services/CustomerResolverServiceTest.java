@@ -18,7 +18,6 @@ package com.firefly.security.center.core.services;
 
 import com.firefly.core.customer.sdk.api.*;
 import com.firefly.core.customer.sdk.model.*;
-import com.firefly.security.center.interfaces.dtos.CustomerInfoDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -16,25 +16,11 @@
 
 package com.firefly.security.center.web.integration;
 
-import com.firefly.core.customer.sdk.model.PartyDTO;
-import com.firefly.core.customer.sdk.model.NaturalPersonDTO;
-import com.firefly.core.customer.sdk.model.EmailContactDTO;
-import com.firefly.core.customer.sdk.model.PhoneContactDTO;
-import com.firefly.core.customer.sdk.model.PaginationResponseEmailContactDTO;
-import com.firefly.core.customer.sdk.model.PaginationResponsePhoneContactDTO;
-import com.firefly.core.contract.sdk.model.ContractPartyDTO;
-import com.firefly.core.contract.sdk.model.ContractDTO;
-import com.firefly.core.contract.sdk.model.PaginationResponse;
 import com.firefly.idp.dtos.LoginRequest;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.KeycloakBuilder;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -44,7 +30,8 @@ import org.testcontainers.junit.jupiter.Container;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

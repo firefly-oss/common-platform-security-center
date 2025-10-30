@@ -16,16 +16,10 @@
 
 package com.firefly.security.center.web.integration;
 
-import com.firefly.core.contract.sdk.model.PaginationResponseContractPartyDTO;
-import com.firefly.core.customer.sdk.model.PartyDTO;
-import com.firefly.core.customer.sdk.model.NaturalPersonDTO;
-import com.firefly.core.customer.sdk.model.EmailContactDTO;
-import com.firefly.core.customer.sdk.model.PhoneContactDTO;
-import com.firefly.core.customer.sdk.model.PaginationResponseEmailContactDTO;
-import com.firefly.core.customer.sdk.model.PaginationResponsePhoneContactDTO;
-import com.firefly.core.contract.sdk.model.ContractPartyDTO;
 import com.firefly.core.contract.sdk.model.ContractDTO;
-import com.firefly.core.contract.sdk.model.PaginationResponse;
+import com.firefly.core.contract.sdk.model.ContractPartyDTO;
+import com.firefly.core.contract.sdk.model.PaginationResponseContractPartyDTO;
+import com.firefly.core.customer.sdk.model.*;
 import com.firefly.idp.dtos.LoginRequest;
 import com.redis.testcontainers.RedisContainer;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
