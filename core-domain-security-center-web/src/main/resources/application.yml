@@ -61,7 +61,7 @@ firefly:
   security-center:
     # IDP Configuration
     idp:
-      provider: keycloak  # Options: keycloak, cognito, custom
+      provider: cognito  # Options: keycloak, cognito, custom
       
       # Keycloak configuration
       keycloak:

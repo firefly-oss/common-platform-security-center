@@ -180,6 +180,19 @@ public class AuthenticationService {
     }
 
     /**
+     * Reset password for the given user via IDP.
+     *
+     * @param userName The username whose password will be reset
+     * @return completion signal; errors if IDP fails
+     */
+    public Mono<Void> resetPassword(String userName) {
+        log.info("Reset password request for user: {}", userName);
+        return idpAdapter.resetPassword(userName)
+                .doOnSuccess(v -> log.info("Reset password completed for user: {}", userName))
+                .doOnError(err -> log.error("Reset password failed for {}", userName, err));
+    }
+
+    /**
      * Map IDP user to Firefly partyId using customer-mgmt SDK.
      *
      * <p>This delegates to {@link UserMappingService} which queries customer-mgmt

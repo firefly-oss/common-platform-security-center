@@ -120,6 +120,8 @@
                             <apiPackage>com.firefly.security.center.sdk.api</apiPackage>
                             <modelPackage>com.firefly.security.center.sdk.model</modelPackage>
                             <invokerPackage>com.firefly.security.center.sdk.invoker</invokerPackage>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
                             <configOptions>
                                 <java20>true</java20>
                                 <useTags>true</useTags>

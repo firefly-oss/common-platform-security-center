@@ -134,4 +134,22 @@ public class AuthenticationController {
                             .build());
                 });
     }
+
+    /**
+     * Reset password endpoint - triggers IDP password reset flow for a user
+     *
+     * @param userName Username to reset the password for
+     * @return 204 No Content on success
+     */
+    @PostMapping("/reset-password")
+    public Mono<ResponseEntity<Void>> resetPassword(@RequestParam String userName) {
+        log.info("Reset password request for user: {}", userName);
+        return authenticationService.resetPassword(userName)
+                .then(Mono.just(ResponseEntity.noContent().<Void>build()))
+                .onErrorResume(error -> {
+                    log.error("Error during password reset", error);
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .<Void>build());
+                });
+    }
 }
