@@ -43,6 +43,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
 /**
@@ -224,7 +225,7 @@ class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
                 .thenReturn(Mono.just(mockContract));
 
         // Mock other APIs to return empty/default responses
-        when(productApi.getProduct(any(UUID.class)))
+        when(productApi.getProductById(any(UUID.class), isNull()))
                 .thenReturn(Mono.empty());
         when(contractRoleApi.getContractRole(any(UUID.class), anyString()))
                 .thenReturn(Mono.empty());

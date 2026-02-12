@@ -223,7 +223,7 @@ public class ContractResolverService {
      * Fetches product information from product-mgmt using SDK.
      */
     private Mono<ProductInfoDTO> fetchProduct(UUID productId) {
-        return productApi.getProduct(productId)
+        return productApi.getProductById(productId, null)
                 .map(this::mapProductDTOToProductInfo)
                 .doOnSuccess(product ->
                     log.debug("Fetched product: {}", productId))

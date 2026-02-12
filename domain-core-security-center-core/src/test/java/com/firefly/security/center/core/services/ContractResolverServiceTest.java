@@ -101,23 +101,23 @@ class ContractResolverServiceTest {
         when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
         when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(role));
         when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString())).thenReturn(reactor.core.publisher.Flux.just(scope));
-        when(productApi.getProduct(testProductId)).thenReturn(Mono.just(product));
+        when(productApi.getProductById(testProductId, null)).thenReturn(Mono.just(product));
 
         // When & Then
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
                 .assertNext(contracts -> {
                     assertThat(contracts).hasSize(1);
                     ContractInfoDTO contractInfo = contracts.get(0);
-                    
+
                     assertThat(contractInfo.getContractId()).isEqualTo(testContractId);
                     assertThat(contractInfo.getContractNumber()).isEqualTo("CONT-001");
                     assertThat(contractInfo.getContractStatus()).isEqualTo("ACTIVE");
-                    
+
                     assertThat(contractInfo.getRoleInContract()).isNotNull();
                     assertThat(contractInfo.getRoleInContract().getRoleId()).isEqualTo(testRoleId);
                     assertThat(contractInfo.getRoleInContract().getRoleCode()).isEqualTo("BORROWER");
                     assertThat(contractInfo.getRoleInContract().getScopes()).hasSize(1);
-                    
+
                     assertThat(contractInfo.getProduct()).isNotNull();
                     assertThat(contractInfo.getProduct().getProductId()).isEqualTo(testProductId);
                     assertThat(contractInfo.getProduct().getProductName()).isEqualTo("Personal Loan");
@@ -128,7 +128,7 @@ class ContractResolverServiceTest {
         verify(contractsApi).getContractById(eq(testContractId), anyString());
         verify(contractRoleApi).getContractRole(eq(testRoleId), anyString());
         verify(contractRoleScopeApi).getActiveScopesByRoleId(eq(testRoleId), anyString());
-        verify(productApi).getProduct(testProductId);
+        verify(productApi).getProductById(testProductId, null);
     }
 
     @Test
@@ -155,7 +155,7 @@ class ContractResolverServiceTest {
         when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(createContractRoleDTO()));
         when(contractRoleApi.getContractRole(eq(role2Id), anyString())).thenReturn(Mono.just(createContractRoleDTO(role2Id)));
         when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class), anyString())).thenReturn(reactor.core.publisher.Flux.just(createContractRoleScopeDTO()));
-        when(productApi.getProduct(any(UUID.class))).thenReturn(Mono.just(createProductDTO()));
+        when(productApi.getProductById(any(UUID.class), isNull())).thenReturn(Mono.just(createProductDTO()));
 
         // When & Then
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
@@ -235,7 +235,7 @@ class ContractResolverServiceTest {
                 .thenReturn(Mono.error(new RuntimeException("Role not found")));
         when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString()))
                 .thenReturn(reactor.core.publisher.Flux.error(new RuntimeException("Scopes not found")));
-        when(productApi.getProduct(testProductId)).thenReturn(Mono.just(product));
+        when(productApi.getProductById(testProductId, null)).thenReturn(Mono.just(product));
 
         // When & Then - Error should propagate, no fallback
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
@@ -260,7 +260,7 @@ class ContractResolverServiceTest {
         when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
         when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(role));
         when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString())).thenReturn(reactor.core.publisher.Flux.just(scope));
-        when(productApi.getProduct(testProductId))
+        when(productApi.getProductById(testProductId, null))
                 .thenReturn(Mono.error(new RuntimeException("Product not found")));
 
         // When & Then - Error should propagate, no fallback
@@ -287,14 +287,14 @@ class ContractResolverServiceTest {
         when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(role));
         when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString()))
                 .thenReturn(reactor.core.publisher.Flux.error(new RuntimeException("Scopes service down")));
-        when(productApi.getProduct(testProductId)).thenReturn(Mono.just(product));
+        when(productApi.getProductById(testProductId, null)).thenReturn(Mono.just(product));
 
         // When & Then
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
                 .assertNext(contracts -> {
                     assertThat(contracts).hasSize(1);
                     ContractInfoDTO contractInfo = contracts.get(0);
-                    
+
                     assertThat(contractInfo.getRoleInContract().getScopes()).isEmpty();
                 })
                 .verifyComplete();

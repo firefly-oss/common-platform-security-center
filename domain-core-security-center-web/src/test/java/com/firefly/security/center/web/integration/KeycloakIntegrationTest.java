@@ -36,6 +36,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
 /**
@@ -210,7 +211,7 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set product ID", e);
         }
-        when(productApi.getProduct(any(UUID.class)))
+        when(productApi.getProductById(any(UUID.class), isNull()))
                 .thenReturn(Mono.just(mockProduct));
 
         // Mock Reference Master Data SDK
