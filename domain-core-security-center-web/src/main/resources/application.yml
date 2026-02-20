@@ -7,5 +7,123 @@ spring:
       name: Firefly Software Solutions Inc
       email: dev@getfirefly.io
 
-  config:
-    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
+  webflux:
+    base-path: /
+
+  threads:
+    virtual:
+      enabled: true
+
+endpoints:
+  core:
+    common-platform-customer-mgmt: ${ENDPOINT_CORE_CUSTOMER_MGMT:http://localhost:8080}
+    common-platform-contract-mgmt: ${ENDPOINT_CORE_CONTRACT_MGMT:http://localhost:8080}
+    common-platform-product-mgmt: ${ENDPOINT_CORE_PRODUCT_MGMT:http://localhost:8080}
+    common-platform-reference-master-data: ${ENDPOINT_CORE_REFERENCE_MASTER_DATA:http://localhost:8080}
+
+server:
+  address: ${SERVER_ADDRESS:localhost}
+  port: ${SERVER_PORT:8085}
+  shutdown: graceful
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tagsSorter: alpha
+    operationsSorter: method
+    docExpansion: none
+    filter: true
+  packages-to-scan: com.firefly.security.center.web.controllers
+  paths-to-match: /api/**
+
+firefly:
+  # Firefly Common Cache configuration
+  cache:
+    enabled: true
+    default-cache-type: REDIS
+    metrics-enabled: true
+    health-enabled: true
+
+    caffeine:
+      cache-name: session-cache
+      enabled: false
+      key-prefix: "firefly:session"
+      maximum-size: 10000
+      expire-after-write: PT30M
+      record-stats: true
+
+    redis:
+      cache-name: session-cache
+      enabled: true
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: 0
+      key-prefix: "firefly:session"
+      password: ${REDIS_PASSWORD:}
+
+  security-center:
+    # IDP Configuration
+    idp:
+      provider: cognito
+
+      keycloak:
+        server-url: ${KEYCLOAK_URL:http://localhost:8080}
+        realm: ${KEYCLOAK_REALM:firefly}
+        client-id: ${KEYCLOAK_CLIENT_ID:security-center}
+        client-secret: ${KEYCLOAK_CLIENT_SECRET}
+        admin-username: ${KEYCLOAK_ADMIN_USERNAME:admin}
+        admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
+
+      cognito:
+        region: ${AWS_REGION}
+        user-pool-id: ${COGNITO_USER_POOL_ID}
+        client-id: ${COGNITO_CLIENT_ID}
+        client-secret: ${COGNITO_CLIENT_SECRET}
+        domain: ${COGNITO_DOMAIN}
+
+    session:
+      timeout-minutes: 30
+      cleanup-interval-minutes: 15
+
+    # Downstream microservice SDK clients
+    clients:
+      customer-mgmt:
+        base-url: ${endpoints.core.common-platform-customer-mgmt}
+        timeout-seconds: 10
+      contract-mgmt:
+        base-url: ${endpoints.core.common-platform-contract-mgmt}
+        timeout-seconds: 10
+      product-mgmt:
+        base-url: ${endpoints.core.common-platform-product-mgmt}
+        timeout-seconds: 10
+      reference-master-data:
+        base-url: ${endpoints.core.common-platform-reference-master-data}
+        timeout-seconds: 10
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  health:
+    defaults:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  level:
+    root: INFO
+    com.firefly: DEBUG
+    org.springframework.web: DEBUG
