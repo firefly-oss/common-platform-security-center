@@ -17,6 +17,12 @@
     <name>Firefly Security Center - Web</name>
     <description>REST API and Spring Boot application for Security Center</description>
 
+    <properties>
+        <!-- Enable OpenAPI generation (profile inherited from firefly-parent) -->
+        <openapi.gen.skip>false</openapi.gen.skip>
+        <openapi.gen.mainClass>com.firefly.security.center.web.openapi.OpenApiGenApplication</openapi.gen.mainClass>
+    </properties>
+
     <dependencies>
         <!-- Internal dependencies -->
         <dependency>
@@ -143,7 +149,7 @@
             <artifactId>auth</artifactId>
             <version>2.20.26</version>
         </dependency>
-        
+
         <!-- Keycloak Admin Client -->
         <dependency>
             <groupId>org.keycloak</groupId>
@@ -151,7 +157,7 @@
             <version>23.0.0</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- IDP Adapter Implementations for Integration Tests -->
         <dependency>
             <groupId>org.fireflyframework</groupId>
