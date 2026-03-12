@@ -40,6 +40,16 @@ springdoc:
   paths-to-match: /api/**
 
 firefly:
+  # Framework-level IDP properties (required by fireflyframework-idp-aws-cognito auto-configuration)
+  idp:
+    provider: cognito
+    cognito:
+      region: ${AWS_REGION}
+      user-pool-id: ${COGNITO_USER_POOL_ID}
+      client-id: ${COGNITO_CLIENT_ID}
+      client-secret: ${COGNITO_CLIENT_SECRET}
+      domain: ${COGNITO_DOMAIN}
+
   # Firefly Common Cache configuration
   cache:
     enabled: true
