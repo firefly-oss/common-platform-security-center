@@ -97,11 +97,11 @@ class ContractResolverServiceTest {
 
         doReturn(Mono.just(contractPartiesResponse))
                 .when(globalContractPartiesApi)
-                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
-        when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
-        when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(role));
-        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString())).thenReturn(reactor.core.publisher.Flux.just(scope));
-        when(productApi.getProductById(testProductId, null)).thenReturn(Mono.just(product));
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true));
+        when(contractsApi.getContractById(eq(testContractId))).thenReturn(Mono.just(contract));
+        when(contractRoleApi.getContractRole(eq(testRoleId))).thenReturn(Mono.just(role));
+        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId))).thenReturn(reactor.core.publisher.Flux.just(scope));
+        when(productApi.getProductById(testProductId)).thenReturn(Mono.just(product));
 
         // When & Then
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
@@ -124,11 +124,11 @@ class ContractResolverServiceTest {
                 })
                 .verifyComplete();
 
-        verify(globalContractPartiesApi).getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
-        verify(contractsApi).getContractById(eq(testContractId), anyString());
-        verify(contractRoleApi).getContractRole(eq(testRoleId), anyString());
-        verify(contractRoleScopeApi).getActiveScopesByRoleId(eq(testRoleId), anyString());
-        verify(productApi).getProductById(testProductId, null);
+        verify(globalContractPartiesApi).getContractPartiesByPartyId(eq(testPartyId), eq(true));
+        verify(contractsApi).getContractById(eq(testContractId));
+        verify(contractRoleApi).getContractRole(eq(testRoleId));
+        verify(contractRoleScopeApi).getActiveScopesByRoleId(eq(testRoleId));
+        verify(productApi).getProductById(testProductId);
     }
 
     @Test
@@ -149,13 +149,13 @@ class ContractResolverServiceTest {
 
         doReturn(Mono.just(response))
                 .when(globalContractPartiesApi)
-                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
-        when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(createContractDTO()));
-        when(contractsApi.getContractById(eq(contract2Id), anyString())).thenReturn(Mono.just(createContractDTO(contract2Id)));
-        when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(createContractRoleDTO()));
-        when(contractRoleApi.getContractRole(eq(role2Id), anyString())).thenReturn(Mono.just(createContractRoleDTO(role2Id)));
-        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class), anyString())).thenReturn(reactor.core.publisher.Flux.just(createContractRoleScopeDTO()));
-        when(productApi.getProductById(any(UUID.class), isNull())).thenReturn(Mono.just(createProductDTO()));
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true));
+        when(contractsApi.getContractById(eq(testContractId))).thenReturn(Mono.just(createContractDTO()));
+        when(contractsApi.getContractById(eq(contract2Id))).thenReturn(Mono.just(createContractDTO(contract2Id)));
+        when(contractRoleApi.getContractRole(eq(testRoleId))).thenReturn(Mono.just(createContractRoleDTO()));
+        when(contractRoleApi.getContractRole(eq(role2Id))).thenReturn(Mono.just(createContractRoleDTO(role2Id)));
+        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class))).thenReturn(reactor.core.publisher.Flux.just(createContractRoleScopeDTO()));
+        when(productApi.getProductById(any(UUID.class))).thenReturn(Mono.just(createProductDTO()));
 
         // When & Then
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
@@ -172,7 +172,7 @@ class ContractResolverServiceTest {
 
         doReturn(Mono.just(emptyResponse))
                 .when(globalContractPartiesApi)
-                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true));
 
         // When & Then
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
@@ -181,14 +181,14 @@ class ContractResolverServiceTest {
                 })
                 .verifyComplete();
 
-        verify(globalContractPartiesApi).getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
+        verify(globalContractPartiesApi).getContractPartiesByPartyId(eq(testPartyId), eq(true));
         verifyNoInteractions(contractsApi, contractRoleApi, contractRoleScopeApi, productApi);
     }
 
     @Test
     void resolveActiveContracts_contractPartiesFetchFails_returnsEmpty() {
         // Given
-        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString()))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(eq(testPartyId), eq(true)))
                 .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
 
         // When & Then
@@ -207,8 +207,8 @@ class ContractResolverServiceTest {
 
         doReturn(Mono.just(response))
                 .when(globalContractPartiesApi)
-                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
-        when(contractsApi.getContractById(eq(testContractId), anyString()))
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true));
+        when(contractsApi.getContractById(eq(testContractId)))
                 .thenReturn(Mono.error(new RuntimeException("Contract not found")));
 
         // When & Then - Error should propagate, no partial data
@@ -229,13 +229,13 @@ class ContractResolverServiceTest {
 
         doReturn(Mono.just(response))
                 .when(globalContractPartiesApi)
-                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
-        when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
-        when(contractRoleApi.getContractRole(eq(testRoleId), anyString()))
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true));
+        when(contractsApi.getContractById(eq(testContractId))).thenReturn(Mono.just(contract));
+        when(contractRoleApi.getContractRole(eq(testRoleId)))
                 .thenReturn(Mono.error(new RuntimeException("Role not found")));
-        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString()))
+        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId)))
                 .thenReturn(reactor.core.publisher.Flux.error(new RuntimeException("Scopes not found")));
-        when(productApi.getProductById(testProductId, null)).thenReturn(Mono.just(product));
+        when(productApi.getProductById(testProductId)).thenReturn(Mono.just(product));
 
         // When & Then - Error should propagate, no fallback
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))
@@ -256,11 +256,11 @@ class ContractResolverServiceTest {
 
         doReturn(Mono.just(response))
                 .when(globalContractPartiesApi)
-                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
-        when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
-        when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(role));
-        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString())).thenReturn(reactor.core.publisher.Flux.just(scope));
-        when(productApi.getProductById(testProductId, null))
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true));
+        when(contractsApi.getContractById(eq(testContractId))).thenReturn(Mono.just(contract));
+        when(contractRoleApi.getContractRole(eq(testRoleId))).thenReturn(Mono.just(role));
+        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId))).thenReturn(reactor.core.publisher.Flux.just(scope));
+        when(productApi.getProductById(testProductId))
                 .thenReturn(Mono.error(new RuntimeException("Product not found")));
 
         // When & Then - Error should propagate, no fallback
@@ -282,12 +282,12 @@ class ContractResolverServiceTest {
 
         doReturn(Mono.just(response))
                 .when(globalContractPartiesApi)
-                .getContractPartiesByPartyId(eq(testPartyId), eq(true), anyString());
-        when(contractsApi.getContractById(eq(testContractId), anyString())).thenReturn(Mono.just(contract));
-        when(contractRoleApi.getContractRole(eq(testRoleId), anyString())).thenReturn(Mono.just(role));
-        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId), anyString()))
+                .getContractPartiesByPartyId(eq(testPartyId), eq(true));
+        when(contractsApi.getContractById(eq(testContractId))).thenReturn(Mono.just(contract));
+        when(contractRoleApi.getContractRole(eq(testRoleId))).thenReturn(Mono.just(role));
+        when(contractRoleScopeApi.getActiveScopesByRoleId(eq(testRoleId)))
                 .thenReturn(reactor.core.publisher.Flux.error(new RuntimeException("Scopes service down")));
-        when(productApi.getProductById(testProductId, null)).thenReturn(Mono.just(product));
+        when(productApi.getProductById(testProductId)).thenReturn(Mono.just(product));
 
         // When & Then
         StepVerifier.create(contractResolverService.resolveActiveContracts(testPartyId))

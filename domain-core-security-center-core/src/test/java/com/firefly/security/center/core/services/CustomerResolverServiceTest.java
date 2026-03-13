@@ -78,10 +78,10 @@ class CustomerResolverServiceTest {
         PaginationResponseEmailContactDTO emailResponse = createEmailResponse("john.doe@example.com");
         PaginationResponsePhoneContactDTO phoneResponse = createPhoneResponse("+1234567890");
 
-        when(partiesApi.getPartyById(eq(testPartyId), anyString())).thenReturn(Mono.just(party));
-        when(naturalPersonsApi.getNaturalPersonByPartyId(eq(testPartyId), anyString())).thenReturn(Mono.just(naturalPerson));
-        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any(), isNull())).thenReturn(Mono.just(emailResponse));
-        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any(), isNull())).thenReturn(Mono.just(phoneResponse));
+        when(partiesApi.getPartyById(eq(testPartyId))).thenReturn(Mono.just(party));
+        when(naturalPersonsApi.getNaturalPersonByPartyId(eq(testPartyId))).thenReturn(Mono.just(naturalPerson));
+        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any())).thenReturn(Mono.just(emailResponse));
+        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any())).thenReturn(Mono.just(phoneResponse));
 
         // When & Then
         StepVerifier.create(customerResolverService.resolveCustomerInfo(testPartyId))
@@ -97,10 +97,10 @@ class CustomerResolverServiceTest {
                 })
                 .verifyComplete();
 
-        verify(partiesApi).getPartyById(eq(testPartyId), anyString());
-        verify(naturalPersonsApi).getNaturalPersonByPartyId(eq(testPartyId), anyString());
-        verify(emailContactsApi).filterEmailContacts(eq(testPartyId), any(), isNull());
-        verify(phoneContactsApi).filterPhoneContacts(eq(testPartyId), any(), isNull());
+        verify(partiesApi).getPartyById(eq(testPartyId));
+        verify(naturalPersonsApi).getNaturalPersonByPartyId(eq(testPartyId));
+        verify(emailContactsApi).filterEmailContacts(eq(testPartyId), any());
+        verify(phoneContactsApi).filterPhoneContacts(eq(testPartyId), any());
     }
 
     @Test
@@ -111,10 +111,10 @@ class CustomerResolverServiceTest {
         PaginationResponseEmailContactDTO emailResponse = createEmailResponse("contact@company.com");
         PaginationResponsePhoneContactDTO phoneResponse = createPhoneResponse("+9876543210");
 
-        when(partiesApi.getPartyById(eq(testPartyId), anyString())).thenReturn(Mono.just(party));
-        when(legalEntitiesApi.getLegalEntityByPartyId(eq(testPartyId), anyString())).thenReturn(Mono.just(legalEntity));
-        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any(), isNull())).thenReturn(Mono.just(emailResponse));
-        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any(), isNull())).thenReturn(Mono.just(phoneResponse));
+        when(partiesApi.getPartyById(eq(testPartyId))).thenReturn(Mono.just(party));
+        when(legalEntitiesApi.getLegalEntityByPartyId(eq(testPartyId))).thenReturn(Mono.just(legalEntity));
+        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any())).thenReturn(Mono.just(emailResponse));
+        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any())).thenReturn(Mono.just(phoneResponse));
 
         // When & Then
         StepVerifier.create(customerResolverService.resolveCustomerInfo(testPartyId))
@@ -128,9 +128,9 @@ class CustomerResolverServiceTest {
                 })
                 .verifyComplete();
 
-        verify(partiesApi).getPartyById(eq(testPartyId), anyString());
-        verify(legalEntitiesApi).getLegalEntityByPartyId(eq(testPartyId), anyString());
-        verify(naturalPersonsApi, never()).getNaturalPersonByPartyId(eq(testPartyId), anyString());
+        verify(partiesApi).getPartyById(eq(testPartyId));
+        verify(legalEntitiesApi).getLegalEntityByPartyId(eq(testPartyId));
+        verify(naturalPersonsApi, never()).getNaturalPersonByPartyId(eq(testPartyId));
     }
 
     @Test
@@ -143,11 +143,11 @@ class CustomerResolverServiceTest {
         naturalPerson.setFamilyName1("Doe");
         // No middle name or familyName2
 
-        when(partiesApi.getPartyById(eq(testPartyId), anyString())).thenReturn(Mono.just(party));
-        when(naturalPersonsApi.getNaturalPersonByPartyId(eq(testPartyId), anyString())).thenReturn(Mono.just(naturalPerson));
-        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any(), isNull()))
+        when(partiesApi.getPartyById(eq(testPartyId))).thenReturn(Mono.just(party));
+        when(naturalPersonsApi.getNaturalPersonByPartyId(eq(testPartyId))).thenReturn(Mono.just(naturalPerson));
+        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any()))
                 .thenReturn(Mono.just(createEmailResponse(null)));
-        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any(), isNull()))
+        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any()))
                 .thenReturn(Mono.just(createPhoneResponse(null)));
 
         // When & Then
@@ -169,11 +169,11 @@ class CustomerResolverServiceTest {
         legalEntity.setLegalName("Acme Legal Name LLC");
         // No trade name
 
-        when(partiesApi.getPartyById(eq(testPartyId), anyString())).thenReturn(Mono.just(party));
-        when(legalEntitiesApi.getLegalEntityByPartyId(eq(testPartyId), anyString())).thenReturn(Mono.just(legalEntity));
-        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any(), isNull()))
+        when(partiesApi.getPartyById(eq(testPartyId))).thenReturn(Mono.just(party));
+        when(legalEntitiesApi.getLegalEntityByPartyId(eq(testPartyId))).thenReturn(Mono.just(legalEntity));
+        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any()))
                 .thenReturn(Mono.just(createEmailResponse(null)));
-        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any(), isNull()))
+        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any()))
                 .thenReturn(Mono.just(createPhoneResponse(null)));
 
         // When & Then
@@ -189,8 +189,8 @@ class CustomerResolverServiceTest {
         // Given
         PartyDTO party = createPartyDTO(PartyDTO.PartyKindEnum.INDIVIDUAL);
 
-        when(partiesApi.getPartyById(eq(testPartyId), anyString())).thenReturn(Mono.just(party));
-        when(naturalPersonsApi.getNaturalPersonByPartyId(eq(testPartyId), anyString()))
+        when(partiesApi.getPartyById(eq(testPartyId))).thenReturn(Mono.just(party));
+        when(naturalPersonsApi.getNaturalPersonByPartyId(eq(testPartyId)))
                 .thenReturn(Mono.error(new RuntimeException("Natural person not found")));
         // No need to mock email/phone contacts - error happens before they're called
 
@@ -208,11 +208,11 @@ class CustomerResolverServiceTest {
         PartyDTO party = createPartyDTO(PartyDTO.PartyKindEnum.INDIVIDUAL);
         NaturalPersonDTO naturalPerson = createNaturalPersonDTO();
 
-        when(partiesApi.getPartyById(eq(testPartyId), anyString())).thenReturn(Mono.just(party));
-        when(naturalPersonsApi.getNaturalPersonByPartyId(eq(testPartyId), anyString())).thenReturn(Mono.just(naturalPerson));
-        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any(), isNull()))
+        when(partiesApi.getPartyById(eq(testPartyId))).thenReturn(Mono.just(party));
+        when(naturalPersonsApi.getNaturalPersonByPartyId(eq(testPartyId))).thenReturn(Mono.just(naturalPerson));
+        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any()))
                 .thenReturn(Mono.error(new RuntimeException("Email service down")));
-        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any(), isNull()))
+        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any()))
                 .thenReturn(Mono.just(createPhoneResponse("+1234567890")));
 
         // When & Then
@@ -228,7 +228,7 @@ class CustomerResolverServiceTest {
     @Test
     void resolveCustomerInfo_partyNotFound_propagatesError() {
         // Given
-        when(partiesApi.getPartyById(eq(testPartyId), anyString()))
+        when(partiesApi.getPartyById(eq(testPartyId)))
                 .thenReturn(Mono.error(new RuntimeException("Party not found")));
 
         // When & Then - Error should propagate, no fallback
@@ -238,7 +238,7 @@ class CustomerResolverServiceTest {
                     throwable.getMessage().equals("Party not found"))
                 .verify();
 
-        verify(partiesApi).getPartyById(eq(testPartyId), anyString());
+        verify(partiesApi).getPartyById(eq(testPartyId));
         verifyNoInteractions(naturalPersonsApi, legalEntitiesApi, emailContactsApi, phoneContactsApi);
     }
 
@@ -248,7 +248,7 @@ class CustomerResolverServiceTest {
         PartyDTO party = createPartyDTO(null);
         party.setPartyKind(null);
 
-        when(partiesApi.getPartyById(eq(testPartyId), anyString())).thenReturn(Mono.just(party));
+        when(partiesApi.getPartyById(eq(testPartyId))).thenReturn(Mono.just(party));
         // No need to mock email/phone contacts - error happens before they're called
 
         // When & Then - Error should propagate for unknown party kind
@@ -270,11 +270,11 @@ class CustomerResolverServiceTest {
         PaginationResponseEmailContactDTO emailResponse = new PaginationResponseEmailContactDTO();
         emailResponse.setContent(List.of(secondaryEmail, primaryEmail)); // Primary is second
 
-        when(partiesApi.getPartyById(eq(testPartyId), anyString())).thenReturn(Mono.just(party));
-        when(naturalPersonsApi.getNaturalPersonByPartyId(eq(testPartyId), anyString())).thenReturn(Mono.just(naturalPerson));
-        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any(), isNull()))
+        when(partiesApi.getPartyById(eq(testPartyId))).thenReturn(Mono.just(party));
+        when(naturalPersonsApi.getNaturalPersonByPartyId(eq(testPartyId))).thenReturn(Mono.just(naturalPerson));
+        when(emailContactsApi.filterEmailContacts(eq(testPartyId), any()))
                 .thenReturn(Mono.just(emailResponse));
-        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any(), isNull()))
+        when(phoneContactsApi.filterPhoneContacts(eq(testPartyId), any()))
                 .thenReturn(Mono.just(createPhoneResponse(null)));
 
         // When & Then

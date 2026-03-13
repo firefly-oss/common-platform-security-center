@@ -63,9 +63,9 @@ public class IdpAutoConfiguration {
      * Enable Keycloak IDP adapter when on classpath and provider=keycloak
      */
     @Configuration
-    @ConditionalOnClass(name = {"com.firefly.idp.adapter.impl.IdpAdapterImpl", "com.firefly.idp.properties.KeycloakProperties"})
+    @ConditionalOnClass(name = {"org.fireflyframework.idp.adapter.impl.IdpAdapterImpl", "org.fireflyframework.idp.properties.KeycloakProperties"})
     @ConditionalOnProperty(prefix = "firefly.security-center.idp", name = "provider", havingValue = "keycloak")
-    @ComponentScan(basePackages = {"com.firefly.idp.adapter", "com.firefly.idp.properties", "com.firefly.idp.config"})
+    @ComponentScan(basePackages = {"org.fireflyframework.idp.adapter", "org.fireflyframework.idp.properties", "org.fireflyframework.idp.config"})
     static class KeycloakIdpConfiguration {
         public KeycloakIdpConfiguration() {
             log.info("Loading Keycloak IDP adapter configuration");
@@ -76,9 +76,9 @@ public class IdpAutoConfiguration {
      * Enable AWS Cognito IDP adapter when on classpath and provider=cognito
      */
     @Configuration
-    @ConditionalOnClass(name = "com.firefly.idp.cognito.adapter.CognitoIdpAdapter")
+    @ConditionalOnClass(name = "org.fireflyframework.idp.cognito.adapter.CognitoIdpAdapter")
     @ConditionalOnProperty(prefix = "firefly.security-center.idp", name = "provider", havingValue = "cognito")
-    @ComponentScan(basePackages = "com.firefly.idp.cognito")
+    @ComponentScan(basePackages = "org.fireflyframework.idp.cognito")
     static class CognitoIdpConfiguration {
         public CognitoIdpConfiguration() {
             log.info("Loading AWS Cognito IDP adapter configuration");
@@ -89,9 +89,9 @@ public class IdpAutoConfiguration {
      * Enable Internal Database IDP adapter when on classpath and provider=internal-db
      */
     @Configuration
-    @ConditionalOnClass(name = "com.firefly.idp.internaldb.adapter.InternalDbIdpAdapter")
+    @ConditionalOnClass(name = "org.fireflyframework.idp.internaldb.adapter.InternalDbIdpAdapter")
     @ConditionalOnProperty(prefix = "firefly.security-center.idp", name = "provider", havingValue = "internal-db")
-    @ComponentScan(basePackages = "com.firefly.idp.internaldb")
+    @ComponentScan(basePackages = "org.fireflyframework.idp.internaldb")
     static class InternalDbIdpConfiguration {
         public InternalDbIdpConfiguration() {
             log.info("Loading Internal Database IDP adapter configuration");

@@ -63,6 +63,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Firefly Framework Web (OpenAPI generation in tests) -->
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-web</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Testing dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

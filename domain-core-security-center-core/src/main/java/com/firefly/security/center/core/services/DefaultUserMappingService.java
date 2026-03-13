@@ -120,7 +120,7 @@ public class DefaultUserMappingService implements UserMappingService {
         pagination.setPageSize(100); // Process in batches of 100
         filter.setPagination(pagination);
 
-        return partiesApi.filterParties(filter, UUID.randomUUID().toString())
+        return partiesApi.filterParties(filter)
                 .expand(response -> {
                     // If there are more pages, fetch them
                     if (response.getCurrentPage() != null &&
@@ -130,7 +130,7 @@ public class DefaultUserMappingService implements UserMappingService {
                         nextPage.setPageSize(100);
                         FilterRequestPartyDTO nextFilter = new FilterRequestPartyDTO();
                         nextFilter.setPagination(nextPage);
-                        return partiesApi.filterParties(nextFilter, UUID.randomUUID().toString());
+                        return partiesApi.filterParties(nextFilter);
                     }
                     return Mono.empty();
                 })
@@ -174,7 +174,7 @@ public class DefaultUserMappingService implements UserMappingService {
         filter.setFilters(emailFilter);
         filter.setPagination(pagination);
 
-        return emailContactsApi.filterEmailContacts(partyId, filter, UUID.randomUUID().toString())
+        return emailContactsApi.filterEmailContacts(partyId, filter)
                 .map(response -> response != null && response.getContent() != null && !response.getContent().isEmpty())
                 .onErrorResume(e -> {
                     log.error("Error checking email for partyId {}: {}", partyId, e.getMessage(), e);
@@ -209,7 +209,7 @@ public class DefaultUserMappingService implements UserMappingService {
         pagination.setPageSize(10); // Should only find one
         filter.setPagination(pagination);
 
-        return partiesApi.filterParties(filter, UUID.randomUUID().toString())
+        return partiesApi.filterParties(filter)
                 .flatMap(response -> {
                     if (response.getContent() != null && !response.getContent().isEmpty()) {
                         PartyDTO firstItem = response.getContent().getFirst();

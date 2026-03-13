@@ -233,14 +233,14 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         }
         mockParty.setPartyKind(com.firefly.core.customer.sdk.model.PartyDTO.PartyKindEnum.INDIVIDUAL);
         mockParty.setPreferredLanguage("en");
-        when(partiesApi.getPartyById(any(UUID.class), anyString()))
+        when(partiesApi.getPartyById(any(UUID.class)))
                 .thenReturn(Mono.just(mockParty));
 
         // Mock Natural Person
         com.firefly.core.customer.sdk.model.NaturalPersonDTO mockPerson = new com.firefly.core.customer.sdk.model.NaturalPersonDTO();
         mockPerson.setGivenName("Test");
         mockPerson.setFamilyName1("User");
-        when(naturalPersonsApi.getNaturalPersonByPartyId(any(UUID.class), anyString()))
+        when(naturalPersonsApi.getNaturalPersonByPartyId(any(UUID.class)))
                 .thenReturn(Mono.just(mockPerson));
 
         // Mock Email Contacts
@@ -250,17 +250,17 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         com.firefly.core.customer.sdk.model.PaginationResponseEmailContactDTO emailResponse = 
                 new com.firefly.core.customer.sdk.model.PaginationResponseEmailContactDTO();
         emailResponse.setContent(Collections.singletonList(mockEmail));
-        when(emailContactsApi.filterEmailContacts(any(UUID.class), any(), any()))
+        when(emailContactsApi.filterEmailContacts(any(UUID.class), any()))
                 .thenReturn(Mono.just(emailResponse));
 
         // Mock Phone Contacts
         com.firefly.core.customer.sdk.model.PhoneContactDTO mockPhone = new com.firefly.core.customer.sdk.model.PhoneContactDTO();
         mockPhone.setPhoneNumber("+1234567890");
         mockPhone.setIsPrimary(true);
-        com.firefly.core.customer.sdk.model.PaginationResponsePhoneContactDTO phoneResponse = 
+        com.firefly.core.customer.sdk.model.PaginationResponsePhoneContactDTO phoneResponse =
                 new com.firefly.core.customer.sdk.model.PaginationResponsePhoneContactDTO();
         phoneResponse.setContent(Collections.singletonList(mockPhone));
-        when(phoneContactsApi.filterPhoneContacts(any(UUID.class), any(), any()))
+        when(phoneContactsApi.filterPhoneContacts(any(UUID.class), any()))
                 .thenReturn(Mono.just(phoneResponse));
 
         // Mock Contract Management SDK
@@ -275,7 +275,7 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
                 new com.firefly.core.contract.sdk.model.PaginationResponseContractPartyDTO();
         contractPartiesResponse.setContent(Collections.singletonList(mockContractParty));
         contractPartiesResponse.setTotalElements(1L);
-        when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class), anyString()))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class)))
                 .thenReturn(Mono.just(contractPartiesResponse));
 
         // Mock Contract Details
@@ -290,7 +290,7 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set contract ID", e);
         }
-        when(contractsApi.getContractById(any(UUID.class), anyString()))
+        when(contractsApi.getContractById(any(UUID.class)))
                 .thenReturn(Mono.just(mockContract));
 
         // Mock Product Management SDK
@@ -305,7 +305,7 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set product ID", e);
         }
-        when(productApi.getProductById(any(UUID.class), isNull()))
+        when(productApi.getProductById(any(UUID.class)))
                 .thenReturn(Mono.just(mockProduct));
 
         // Mock Reference Master Data SDK
@@ -321,7 +321,7 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set role ID", e);
         }
-        when(contractRoleApi.getContractRole(any(UUID.class), anyString()))
+        when(contractRoleApi.getContractRole(any(UUID.class)))
                 .thenReturn(Mono.just(mockRole));
 
         // Mock Role Scopes
@@ -336,7 +336,7 @@ class CognitoIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set scope ID", e);
         }
-        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class), anyString()))
+        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class)))
                 .thenReturn(Flux.just(mockScope));
     }
 
