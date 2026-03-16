@@ -151,7 +151,7 @@ public class AuthenticationService {
                                         UserInfoResponse userInfo = userInfoResponse.getBody();
                                         
                                         // Map to partyId and refresh session
-                                        return mapUserToPartyId(userInfoResponse.getBody(), null)
+                                        return mapUserToPartyId(userInfoResponse.getBody(), UUID.randomUUID().toString())
                                                 .flatMap(partyId -> sessionManager.getSessionByPartyId(partyId)
                                                         .map(session -> AuthenticationResponse.builder()
                                                                 .accessToken(tokens.getAccessToken())

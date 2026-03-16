@@ -92,20 +92,20 @@ public class FireflySessionManagerImpl implements FireflySessionManager {
     @Override
     public Mono<SessionContextDTO> getSessionBySessionId(String sessionId) {
         log.debug("Retrieving session by sessionId: {}", sessionId);
-        
+
         String cacheKey = SESSION_CACHE_PREFIX + sessionId;
-        
+
         return cacheManager.get(cacheKey, SessionContextDTO.class)
             .flatMap(cached -> {
                 if (cached.isPresent()) {
                     log.debug("Session found in cache: {}", sessionId);
                     return Mono.just(cached.get());
                 }
-                
+
                 log.debug("Session not in cache, creating new session: {}", sessionId);
                 UUID partyId = extractPartyIdFromSessionId(sessionId);
                 return getOrCreateSessionInternal(sessionId, partyId, null, null, null)
-                    .flatMap(session -> cacheManager.put(cacheKey, session, 
+                    .flatMap(session -> cacheManager.put(cacheKey, session,
                             Duration.ofMinutes(DEFAULT_SESSION_TIMEOUT_MINUTES))
                         .thenReturn(session));
             });

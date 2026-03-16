@@ -91,7 +91,7 @@ public class ContractResolverService {
     private Flux<ContractInfoDTO> fetchContractPartiesForParty(UUID partyId) {
         log.debug("Fetching contract parties for partyId: {}", partyId);
         
-        return globalContractPartiesApi.getContractPartiesByPartyId(partyId, true)
+        return globalContractPartiesApi.getContractPartiesByPartyId(partyId, true, UUID.randomUUID().toString())
                 .flatMapMany(response -> Flux.fromIterable(Objects.requireNonNull(response.getContent())))
                 .map(this::mapContractPartyDTOToContractInfo)
                 .doOnNext(contractInfo -> 
@@ -182,7 +182,7 @@ public class ContractResolverService {
      * Fetches full contract details from contract-mgmt using SDK.
      */
     private Mono<ContractInfoDTO> fetchContract(UUID contractId) {
-        return contractsApi.getContractById(contractId)
+        return contractsApi.getContractById(contractId, UUID.randomUUID().toString())
                 .map(this::mapContractDTOToContractInfo)
                 .doOnSuccess(contract -> 
                     log.debug("Fetched contract: {}", contractId))
@@ -194,7 +194,7 @@ public class ContractResolverService {
      * Fetches role details from reference-master-data using SDK.
      */
     private Mono<RoleInfoDTO> fetchRole(UUID roleId) {
-        return contractRoleApi.getContractRole(roleId)
+        return contractRoleApi.getContractRole(roleId, UUID.randomUUID().toString())
                 .map(this::mapContractRoleDTOToRoleInfo)
                 .doOnSuccess(role ->
                     log.debug("Fetched role: {}", roleId))
@@ -206,7 +206,7 @@ public class ContractResolverService {
      * Fetches all active scopes (permissions) for a role from reference-master-data using SDK.
      */
     private Mono<List<RoleScopeInfoDTO>> fetchRoleScopes(UUID roleId) {
-        return contractRoleScopeApi.getActiveScopesByRoleId(roleId)
+        return contractRoleScopeApi.getActiveScopesByRoleId(roleId, UUID.randomUUID().toString())
                 .map(this::mapContractRoleScopeDTOToRoleScopeInfo)
                 .collectList()
                 .doOnSuccess(scopes ->
@@ -223,7 +223,7 @@ public class ContractResolverService {
      * Fetches product information from product-mgmt using SDK.
      */
     private Mono<ProductInfoDTO> fetchProduct(UUID productId) {
-        return productApi.getProductById(productId)
+        return productApi.getProductById(productId, UUID.randomUUID().toString())
                 .map(this::mapProductDTOToProductInfo)
                 .doOnSuccess(product ->
                     log.debug("Fetched product: {}", productId))

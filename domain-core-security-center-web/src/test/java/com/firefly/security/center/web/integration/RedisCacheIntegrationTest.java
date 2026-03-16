@@ -170,14 +170,14 @@ class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
             throw new RuntimeException("Failed to set party fields", e);
         }
 
-        when(partiesApi.getPartyById(any(UUID.class)))
+        when(partiesApi.getPartyById(any(UUID.class), any()))
                 .thenReturn(Mono.just(mockParty));
 
         // Mock partiesApi.filterParties() for DefaultUserMappingService
         com.firefly.core.customer.sdk.model.PaginationResponsePartyDTO partiesResponse =
                 new com.firefly.core.customer.sdk.model.PaginationResponsePartyDTO();
         partiesResponse.setContent(Collections.singletonList(mockParty));
-        when(partiesApi.filterParties(any()))
+        when(partiesApi.filterParties(any(), any()))
                 .thenReturn(Mono.just(partiesResponse));
 
         // Mock NaturalPersonsApi - return natural person data
@@ -185,7 +185,7 @@ class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         mockPerson.setPartyId(testPartyId);
         mockPerson.setGivenName("Test");
         mockPerson.setFamilyName1("User");
-        when(naturalPersonsApi.getNaturalPersonByPartyId(any(UUID.class)))
+        when(naturalPersonsApi.getNaturalPersonByPartyId(any(UUID.class), any()))
                 .thenReturn(Mono.just(mockPerson));
 
         // Mock EmailContactsApi - return email
@@ -194,7 +194,7 @@ class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         mockEmail.setIsPrimary(true);
         PaginationResponseEmailContactDTO emailResponse = new PaginationResponseEmailContactDTO();
         emailResponse.setContent(Collections.singletonList(mockEmail));
-        when(emailContactsApi.filterEmailContacts(any(UUID.class), any()))
+        when(emailContactsApi.filterEmailContacts(any(UUID.class), any(), any()))
                 .thenReturn(Mono.just(emailResponse));
 
         // Mock PhoneContactsApi - return phone
@@ -203,7 +203,7 @@ class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         mockPhone.setIsPrimary(true);
         PaginationResponsePhoneContactDTO phoneResponse = new PaginationResponsePhoneContactDTO();
         phoneResponse.setContent(Collections.singletonList(mockPhone));
-        when(phoneContactsApi.filterPhoneContacts(any(UUID.class), any()))
+        when(phoneContactsApi.filterPhoneContacts(any(UUID.class), any(), any()))
                 .thenReturn(Mono.just(phoneResponse));
 
         // Mock GlobalContractPartiesApi - return contract parties
@@ -214,22 +214,22 @@ class RedisCacheIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         mockContractParty.setIsActive(true);
         PaginationResponseContractPartyDTO contractPartiesResponse = new PaginationResponseContractPartyDTO();
         contractPartiesResponse.setContent(Collections.singletonList(mockContractParty));
-        when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class)))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class), any()))
                 .thenReturn(Mono.just(contractPartiesResponse));
 
         // Mock ContractsApi - return contract details
         ContractDTO mockContract = new ContractDTO();
         mockContract.setContractNumber("CNT-001");
         mockContract.setContractStatus(ContractDTO.ContractStatusEnum.ACTIVE);
-        when(contractsApi.getContractById(any(UUID.class)))
+        when(contractsApi.getContractById(any(UUID.class), any()))
                 .thenReturn(Mono.just(mockContract));
 
         // Mock other APIs to return empty/default responses
-        when(productApi.getProductById(any(UUID.class)))
+        when(productApi.getProductById(any(UUID.class), any()))
                 .thenReturn(Mono.empty());
-        when(contractRoleApi.getContractRole(any(UUID.class)))
+        when(contractRoleApi.getContractRole(any(UUID.class), any()))
                 .thenReturn(Mono.empty());
-        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class)))
+        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class), any()))
                 .thenReturn(Flux.empty());
     }
 

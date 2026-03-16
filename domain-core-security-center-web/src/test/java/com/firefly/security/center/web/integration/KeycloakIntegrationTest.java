@@ -132,21 +132,21 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         }
         mockParty.setPartyKind(com.firefly.core.customer.sdk.model.PartyDTO.PartyKindEnum.INDIVIDUAL);
         mockParty.setPreferredLanguage("en");
-        when(partiesApi.getPartyById(any(UUID.class)))
+        when(partiesApi.getPartyById(any(UUID.class), any()))
                 .thenReturn(Mono.just(mockParty));
 
         // Mock partiesApi.filterParties() for DefaultUserMappingService
         com.firefly.core.customer.sdk.model.PaginationResponsePartyDTO partiesResponse =
                 new com.firefly.core.customer.sdk.model.PaginationResponsePartyDTO();
         partiesResponse.setContent(Collections.singletonList(mockParty));
-        when(partiesApi.filterParties(any()))
+        when(partiesApi.filterParties(any(), any()))
                 .thenReturn(Mono.just(partiesResponse));
 
         // Mock Natural Person
         com.firefly.core.customer.sdk.model.NaturalPersonDTO mockPerson = new com.firefly.core.customer.sdk.model.NaturalPersonDTO();
         mockPerson.setGivenName("Test");
         mockPerson.setFamilyName1("User");
-        when(naturalPersonsApi.getNaturalPersonByPartyId(any(UUID.class)))
+        when(naturalPersonsApi.getNaturalPersonByPartyId(any(UUID.class), any()))
                 .thenReturn(Mono.just(mockPerson));
 
         // Mock Email Contacts
@@ -156,7 +156,7 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         com.firefly.core.customer.sdk.model.PaginationResponseEmailContactDTO emailResponse = 
                 new com.firefly.core.customer.sdk.model.PaginationResponseEmailContactDTO();
         emailResponse.setContent(Collections.singletonList(mockEmail));
-        when(emailContactsApi.filterEmailContacts(any(UUID.class), any()))
+        when(emailContactsApi.filterEmailContacts(any(UUID.class), any(), any()))
                 .thenReturn(Mono.just(emailResponse));
 
         // Mock Phone Contacts
@@ -166,7 +166,7 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         com.firefly.core.customer.sdk.model.PaginationResponsePhoneContactDTO phoneResponse = 
                 new com.firefly.core.customer.sdk.model.PaginationResponsePhoneContactDTO();
         phoneResponse.setContent(Collections.singletonList(mockPhone));
-        when(phoneContactsApi.filterPhoneContacts(any(UUID.class), any()))
+        when(phoneContactsApi.filterPhoneContacts(any(UUID.class), any(), any()))
                 .thenReturn(Mono.just(phoneResponse));
 
         // Mock Contract Management SDK
@@ -181,7 +181,7 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
                 new com.firefly.core.contract.sdk.model.PaginationResponseContractPartyDTO();
         contractPartiesResponse.setContent(Collections.singletonList(mockContractParty));
         contractPartiesResponse.setTotalElements(1L);
-        when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class)))
+        when(globalContractPartiesApi.getContractPartiesByPartyId(any(UUID.class), any(Boolean.class), any()))
                 .thenReturn(Mono.just(contractPartiesResponse));
 
         // Mock Contract Details
@@ -196,7 +196,7 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set contract ID", e);
         }
-        when(contractsApi.getContractById(any(UUID.class)))
+        when(contractsApi.getContractById(any(UUID.class), any()))
                 .thenReturn(Mono.just(mockContract));
 
         // Mock Product Management SDK
@@ -211,7 +211,7 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set product ID", e);
         }
-        when(productApi.getProductById(any(UUID.class)))
+        when(productApi.getProductById(any(UUID.class), any()))
                 .thenReturn(Mono.just(mockProduct));
 
         // Mock Reference Master Data SDK
@@ -227,7 +227,7 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set role ID", e);
         }
-        when(contractRoleApi.getContractRole(any(UUID.class)))
+        when(contractRoleApi.getContractRole(any(UUID.class), any()))
                 .thenReturn(Mono.just(mockRole));
 
         // Mock Role Scopes
@@ -242,7 +242,7 @@ class KeycloakIntegrationTest extends AbstractSecurityCenterIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set scope ID", e);
         }
-        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class)))
+        when(contractRoleScopeApi.getActiveScopesByRoleId(any(UUID.class), any()))
                 .thenReturn(Flux.just(mockScope));
     }
 

@@ -60,7 +60,7 @@ public class CustomerResolverService {
     public Mono<CustomerInfoDTO> resolveCustomerInfo(UUID partyId) {
         log.debug("Fetching enriched customer info for partyId: {}", partyId);
 
-        return partiesApi.getPartyById(partyId)
+        return partiesApi.getPartyById(partyId, UUID.randomUUID().toString())
                 .flatMap(this::enrichCustomerInfo)
                 .doOnSuccess(customer ->
                     log.debug("Successfully fetched enriched customer info for partyId: {}", partyId))
@@ -116,12 +116,12 @@ public class CustomerResolverService {
      */
     private Mono<String> fetchFullName(UUID partyId, String partyKind) {
         if ("INDIVIDUAL".equalsIgnoreCase(partyKind)) {
-            return naturalPersonsApi.getNaturalPersonByPartyId(partyId)
+            return naturalPersonsApi.getNaturalPersonByPartyId(partyId, UUID.randomUUID().toString())
                     .map(this::buildFullNameFromNaturalPerson)
                     .doOnSuccess(name -> log.debug("Fetched natural person name for partyId: {}", partyId))
                     .doOnError(error -> log.error("Failed to fetch natural person for partyId: {}", partyId, error));
         } else if ("ORGANIZATION".equalsIgnoreCase(partyKind)) {
-            return legalEntitiesApi.getLegalEntityByPartyId(partyId)
+            return legalEntitiesApi.getLegalEntityByPartyId(partyId, UUID.randomUUID().toString())
                     .map(this::buildFullNameFromLegalEntity)
                     .doOnSuccess(name -> log.debug("Fetched legal entity name for partyId: {}", partyId))
                     .doOnError(error -> log.error("Failed to fetch legal entity for partyId: {}", partyId, error));
@@ -182,7 +182,7 @@ public class CustomerResolverService {
         filter.setFilters(emailFilter);
         filter.setPagination(pagination);
         // Note: Set filter criteria if needed to fetch only primary emails
-        return emailContactsApi.filterEmailContacts(partyId, filter)
+        return emailContactsApi.filterEmailContacts(partyId, filter, UUID.randomUUID().toString())
                 .map(PaginationResponseEmailContactDTO::getContent)
                 .flatMap(emails -> {
                     String email = emails.stream()
@@ -205,7 +205,7 @@ public class CustomerResolverService {
     private Mono<String> fetchPrimaryPhone(UUID partyId) {
         FilterRequestPhoneContactDTO filter = new FilterRequestPhoneContactDTO();
         // Note: Set filter criteria if needed to fetch only primary phones
-        return phoneContactsApi.filterPhoneContacts(partyId, filter)
+        return phoneContactsApi.filterPhoneContacts(partyId, filter, UUID.randomUUID().toString())
                 .map(PaginationResponsePhoneContactDTO::getContent)
                 .flatMap(phones -> {
                     String phone = phones.stream()
