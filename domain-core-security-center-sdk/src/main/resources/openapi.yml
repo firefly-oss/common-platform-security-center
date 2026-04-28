@@ -1,0 +1,694 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:18080
+  description: Generated server url
+paths:
+  /api/v1/users:
+    post:
+      tags:
+      - user-controller
+      operationId: createUser
+      parameters:
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CreateUserResponse"
+  /api/v1/sessions:
+    post:
+      tags:
+      - session-controller
+      operationId: createOrGetSession
+      parameters:
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SessionContextDTO"
+  /api/v1/sessions/{sessionId}/refresh:
+    post:
+      tags:
+      - session-controller
+      operationId: refreshSession
+      parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SessionContextDTO"
+  /api/v1/auth/reset-password:
+    post:
+      tags:
+      - authentication-controller
+      operationId: resetPassword
+      parameters:
+      - name: userName
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/auth/refresh:
+    post:
+      tags:
+      - authentication-controller
+      operationId: refresh
+      parameters:
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthenticationResponse"
+  /api/v1/auth/logout:
+    post:
+      tags:
+      - authentication-controller
+      operationId: logout
+      parameters:
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthLogoutRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+  /api/v1/auth/login:
+    post:
+      tags:
+      - authentication-controller
+      operationId: login
+      parameters:
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthenticationResponse"
+  /api/v1/auth/introspect:
+    post:
+      tags:
+      - authentication-controller
+      operationId: introspect
+      parameters:
+      - name: accessToken
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/IntrospectionResponse"
+  /api/v1/sessions/{sessionId}:
+    get:
+      tags:
+      - session-controller
+      operationId: getSessionById
+      parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SessionContextDTO"
+    delete:
+      tags:
+      - session-controller
+      operationId: invalidateSession
+      parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/sessions/{sessionId}/validate:
+    get:
+      tags:
+      - session-controller
+      operationId: validateSession
+      parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: boolean
+  /api/v1/sessions/permission-check:
+    get:
+      tags:
+      - session-controller
+      operationId: checkPermission
+      parameters:
+      - name: partyId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: productId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: actionType
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: resourceType
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: boolean
+  /api/v1/sessions/party/{partyId}:
+    get:
+      tags:
+      - session-controller
+      operationId: getSessionByPartyId
+      parameters:
+      - name: partyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SessionContextDTO"
+    delete:
+      tags:
+      - session-controller
+      operationId: invalidateSessionsByPartyId
+      parameters:
+      - name: partyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/sessions/access-check:
+    get:
+      tags:
+      - session-controller
+      operationId: checkAccess
+      parameters:
+      - name: partyId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: productId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: boolean
+components:
+  schemas:
+    CreateUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        givenName:
+          type: string
+        familyName:
+          type: string
+        partyId:
+          type: string
+          format: uuid
+        userRole:
+          type: string
+          enum:
+          - AGENT
+          - SUPER_AGENT
+          - DISTRIBUTOR
+          - ADMIN
+        attributes:
+          type: object
+          additionalProperties:
+            type: object
+    CreateUserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    ContractInfoDTO:
+      type: object
+      properties:
+        contractId:
+          type: string
+          format: uuid
+        contractNumber:
+          type: string
+        contractStatus:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        contractPartyId:
+          type: string
+          format: uuid
+        roleInContract:
+          $ref: "#/components/schemas/RoleInfoDTO"
+        product:
+          $ref: "#/components/schemas/ProductInfoDTO"
+        dateJoined:
+          type: string
+          format: date-time
+        dateLeft:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CustomerInfoDTO:
+      type: object
+      properties:
+        partyId:
+          type: string
+          format: uuid
+        partyKind:
+          type: string
+        tenantId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        preferredLanguage:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        taxIdNumber:
+          type: string
+        isActive:
+          type: boolean
+    ProductInfoDTO:
+      type: object
+      properties:
+        productId:
+          type: string
+          format: uuid
+        productCatalogId:
+          type: string
+          format: uuid
+        productSubtypeId:
+          type: string
+          format: uuid
+        productName:
+          type: string
+        productCode:
+          type: string
+        productDescription:
+          type: string
+        productType:
+          type: string
+        productStatus:
+          type: string
+        launchDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        dateCreated:
+          type: string
+          format: date-time
+        dateUpdated:
+          type: string
+          format: date-time
+    RoleInfoDTO:
+      type: object
+      properties:
+        roleId:
+          type: string
+          format: uuid
+        roleCode:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: boolean
+        scopes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleScopeInfoDTO"
+        dateCreated:
+          type: string
+          format: date-time
+        dateUpdated:
+          type: string
+          format: date-time
+    RoleScopeInfoDTO:
+      type: object
+      properties:
+        scopeId:
+          type: string
+          format: uuid
+        roleId:
+          type: string
+          format: uuid
+        scopeCode:
+          type: string
+        scopeName:
+          type: string
+        description:
+          type: string
+        actionType:
+          type: string
+        resourceType:
+          type: string
+        isActive:
+          type: boolean
+    SessionContextDTO:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        partyId:
+          type: string
+          format: uuid
+        customerInfo:
+          $ref: "#/components/schemas/CustomerInfoDTO"
+        activeContracts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContractInfoDTO"
+        createdAt:
+          type: string
+          format: date-time
+        lastAccessedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        ipAddress:
+          type: string
+        userAgent:
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - EXPIRED
+          - INVALIDATED
+          - LOCKED
+        metadata:
+          $ref: "#/components/schemas/SessionMetadataDTO"
+    SessionMetadataDTO:
+      type: object
+      properties:
+        channel:
+          type: string
+        sourceApplication:
+          type: string
+        deviceInfo:
+          type: string
+        geolocation:
+          type: string
+    RefreshRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+    AuthenticationResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        idToken:
+          type: string
+        tokenType:
+          type: string
+        expiresIn:
+          type: integer
+          format: int64
+        sessionId:
+          type: string
+        partyId:
+          type: string
+          format: uuid
+    AuthLogoutRequest:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        sessionId:
+          type: string
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        scope:
+          type: string
+    IntrospectionResponse:
+      type: object
+      properties:
+        active:
+          type: boolean
+        scope:
+          type: string
+        username:
+          type: string
+        exp:
+          type: integer
+          format: int64
+        iat:
+          type: integer
+          format: int64
+        sub:
+          type: string
+        aud:
+          type: array
+          items:
+            type: string
+        iss:
+          type: string
+        jti:
+          type: string
+        partyId:
+          type: string
+          format: uuid
+        userRole:
+          type: string
+          enum:
+          - AGENT
+          - SUPER_AGENT
+          - DISTRIBUTOR
+          - ADMIN
