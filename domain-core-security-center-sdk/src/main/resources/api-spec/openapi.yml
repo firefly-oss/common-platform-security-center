@@ -10,7 +10,7 @@ info:
     - Contract-based authorization
   version: 1.0.0
   contact:
-    name: Firefly Software Solutions Inc
+    name: Firefly Software Foundation
     email: dev@getfirefly.io
 
 servers:
